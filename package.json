@@ -218,15 +218,7 @@
     },
     "extraResources": [
       "./assets/**"
-    ],
-    "publish": {
-      "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
-    }
-  },
-  "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
+    ]
   },
   "devEngines": {
     "node": ">=14.x",
