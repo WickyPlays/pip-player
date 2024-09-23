@@ -7,7 +7,7 @@ Hello, and welcome to my first Electron project. This project allows you to run 
 
 It helps solve the problem that most browsers' PiP nowadays are lacking: less controls (Chrome, Edge, etc.), no option for shortcuts, and more.
 
-## How to use.
+## How to use
 
 1. Install and open the .exe file from the Github release page. No further installations required (at least for now).
 2. Copy and paste the link (YouTube, etc.) from your browser into the address bar on the top of windows.
