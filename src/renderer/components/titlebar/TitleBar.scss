@@ -1,0 +1,108 @@
+.titlebar {
+  background-color: black;
+  padding: 3px 1vw;
+  height: 30px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 60% 30% 10%;
+  max-height: 100%;
+  max-width: 100%;
+  user-select: none;
+
+  .search {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 7% 75% 18%;
+    align-items: center;
+
+    .icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      >img {
+        width: 16px !important;
+        height: 16px !important;
+      }
+    }
+
+    #query-link {
+      width: 100%;
+      height: 20px;
+      background-color: rgb(49, 49, 49);
+      border: 0 !important;
+      border-radius: 4px !important;
+      color: white !important;
+      font-size: 11px;
+      padding: 0 8px;
+      margin-left: 4px;
+      box-sizing: border-box;
+    }
+
+    .btn-play {
+      height: 15px;
+      margin-left: 7px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #FF0000 !important;
+      color: #FFF !important;
+      font-size: 10px !important;
+      cursor: pointer;
+
+      @media screen and (max-width: 300px) {
+        font-size: 9px !important;
+      }
+    }
+  }
+
+  .title-dragger {
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    cursor: grab;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+  }
+
+  .title-menu {
+    display: flex;
+    justify-content: end;
+  }
+
+  .btn {
+
+    cursor: pointer;
+
+    &-minimize {
+      @extend .btn;
+      background-color: #6c6c6c !important;
+      max-height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 5px;
+      padding: 0 12px !important;
+      --tw-ring-color: transparent !important;
+
+      &:hover {
+        background-color: #888888 !important;
+      }
+    }
+
+    &-close {
+      @extend .btn;
+      background-color: #FF0000;
+      max-height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px !important;
+      font-size: 10px;
+
+      &:hover {
+        background-color: #ff4343 !important;
+      }
+    }
+  }
+}
