@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import "./App.scss"
 import TitleBar from "./components/titlebar/TitleBar";
 import Content from "./components/loader/content/Content";
-import { convertEmbedLink} from "./utils/EmbedUtil";
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 
 function AppWindow(): JSX.Element {
@@ -20,7 +19,7 @@ function AppWindow(): JSX.Element {
   return (
     <div className="app">
       <TitleBar setLink={setLink} />
-      <Content link={convertEmbedLink(link)} />
+      <Content link={link} />
     </div>
   )
 }

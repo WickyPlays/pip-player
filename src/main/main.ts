@@ -3,6 +3,8 @@ import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
+import { ElectronBlocker } from '@cliqz/adblocker-electron';
+import fetch from 'cross-fetch';
 
 class AppUpdater {
   constructor() {
@@ -70,6 +72,14 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
+  // Create persistent session before loading URL
+  let persistSession = session.fromPartition('persist:contentview');
+
+  // Apply the ad blocker to the persistent session before loading the window
+  let blocker = await ElectronBlocker.fromPrebuiltAdsOnly(fetch);
+  blocker.enableBlockingInSession(persistSession);
+  console.log('Blocking ads enabled in persistent session.');
+
   mainWindow = new BrowserWindow({
     show: false,
     width: 480,
@@ -80,17 +90,15 @@ const createWindow = async () => {
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
       webviewTag: true,
-      // devTools: false,
+      session: persistSession,  // Make sure the persistent session is applied here
     },
     fullscreenable: false,
     transparent: true,
     frame: false,
-    // skipTaskbar: true, //RECONSIDERATION
   });
 
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
   mainWindow.setMenu(null);
-  mainWindow.setAlwaysOnTop(true, 'screen-saver')
+  mainWindow.setAlwaysOnTop(true, 'screen-saver');
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -103,21 +111,13 @@ const createWindow = async () => {
     }
   });
 
-  mainWindow.webContents.on('did-finish-load', () => {
-    console.log('Loading session...');
-
-    let persistSession = session.fromPartition('persist:electron');
-    persistSession
-      .addListener('preconnect', (details, callback) => {
-        console.log('Session loaded');
-      });
-  });
+  // Load the URL after the session and blocker have been set up
+  mainWindow.loadURL(resolveHtmlPath('index.html'));
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 
-  // Open urls in the user's browser
   mainWindow.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
