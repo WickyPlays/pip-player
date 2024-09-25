@@ -1,5 +1,8 @@
 Welcome to PiP Player 1.0.0
 
+> [!NOTE]  
+> A word of warning: this app is HEAVILY under development as you certainly might see bugs here and there. Don't be afraid to submit issues you found via [Issues](https://github.com/WickyPlays/pip-player/issues)
+
 ## What is this?
 
 I'm glad you asked!
