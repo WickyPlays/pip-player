@@ -1,6 +1,6 @@
-Welcome to PiP Player 1.0.0
+Welcome to PiP Player 1.0.1
 
-> [!NOTE]  
+> [!NOTE]
 > A word of warning: this app is HEAVILY under development as you certainly might see bugs here and there. Don't be afraid to submit issues you found via [Issues](https://github.com/WickyPlays/pip-player/issues)
 
 ## What is this?
@@ -18,7 +18,7 @@ It helps solve the problem that most browsers' PiP nowadays are lacking: less co
 
 ## To-do list
 
-* [ ]  An AdBlocker(?).
+* [X]  An AdBlocker.
 * [ ]  [SponsorBlock](https://github.com/ajayyy/SponsorBlock)
 * [ ]  Custom settings (default resolution, etc.)
 * [ ]  More supports for other media platforms (Vimeo, Dailymotion, etc.).
