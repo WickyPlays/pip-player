@@ -75,11 +75,6 @@ const createWindow = async () => {
   // Create persistent session before loading URL
   let persistSession = session.fromPartition('persist:contentview');
 
-  // Apply the ad blocker to the persistent session before loading the window
-  let blocker = await ElectronBlocker.fromPrebuiltAdsOnly(fetch);
-  blocker.enableBlockingInSession(persistSession);
-  console.log('Blocking ads enabled in persistent session.');
-
   mainWindow = new BrowserWindow({
     show: false,
     width: 480,
@@ -90,7 +85,7 @@ const createWindow = async () => {
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
       webviewTag: true,
-      session: persistSession,  // Make sure the persistent session is applied here
+      session: persistSession, // Make sure the persistent session is applied here
     },
     fullscreenable: false,
     transparent: true,
@@ -100,7 +95,13 @@ const createWindow = async () => {
   mainWindow.setMenu(null);
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
 
-  mainWindow.on('ready-to-show', () => {
+  mainWindow.on('ready-to-show', async () => {
+    const blocker = await ElectronBlocker.fromLists(fetch, [
+      'https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt'
+    ]);
+    blocker.enableBlockingInSession(persistSession);
+    console.log('Blocking ads enabled in persistent session.');
+
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
