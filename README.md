@@ -18,7 +18,7 @@ It helps solve the problem that most browsers' PiP nowadays are lacking: less co
 
 ## To-do list
 
-* [X]  An AdBlocker.
+* [X]  An AdBlocker (thanks to AdGuard filter rules).
 * [ ]  [SponsorBlock](https://github.com/ajayyy/SponsorBlock)
 * [ ]  Custom settings (default resolution, etc.)
 * [ ]  More supports for other media platforms (Vimeo, Dailymotion, etc.).
