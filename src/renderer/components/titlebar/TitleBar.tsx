@@ -1,18 +1,19 @@
 import './TitleBar.scss';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import MatButton from '../materials/MatButton';
 import icon from '/assets/icons/icon.png';
 import { CaretRightOutlined, YoutubeOutlined } from '@ant-design/icons';
 import { convertEmbedLink } from '../../utils/EmbedUtil';
 import { useAtom } from 'jotai';
-import { linkAtom } from '../atoms';
+import { linkAtom, embedToggleAtom } from '../atoms';
 
 export default function TitleBar() {
-  const [embedToggle, setEmbedToggle] = useState<boolean>(false);
+  const [embedToggle, setEmbedToggle] = useAtom(embedToggleAtom);
   const [link, setLink] = useAtom(linkAtom);
-
+  const [inputLink, setInputLink] = useState(link);
+  
   const runLink = () => {
-    setLink(convertEmbedLink(link, embedToggle));
+    setLink(convertEmbedLink(inputLink, embedToggle));
   };
 
   const closeApp = async () => {
@@ -22,10 +23,6 @@ export default function TitleBar() {
   const minimizeApp = async () => {
     window.electron.ipcRenderer.send('window-minimize', []);
   };
-
-  useEffect(() => {
-    runLink();
-  }, [embedToggle]);
 
   return (
     <div className="titlebar">
@@ -37,8 +34,9 @@ export default function TitleBar() {
           type="text"
           id="query-link"
           placeholder="https://youtube.com/*"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
+          value={inputLink}
+          onChange={(e) => setInputLink(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && runLink()}
         />
         <MatButton className="btn-play" onClick={runLink}>
           <CaretRightOutlined />

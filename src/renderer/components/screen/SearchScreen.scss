@@ -1,0 +1,19 @@
+.search-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 15;
+  background-color: #141414;
+  display: none;
+  padding: 10px;
+  box-sizing: border-box;
+
+  .label {
+    color: #FFF;
+  }
+}

@@ -1,28 +1,36 @@
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { resolveHtmlPath } from './util';
-import fs from 'fs';
+import { createWindow as createSettingsWindow } from '../settings-main/settings-main';
+import { createWindow as createControllerWindow } from '../controller-main/controller-main';
+import { windowStore } from '../window_store';
 import { ElectronBlocker } from '@ghostery/adblocker-electron';
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('window-minimize', async (event, arg) => {
+ipcMain.on('open-settings-window', async () => {
+  createSettingsWindow();
+});
+
+ipcMain.on('open-controller-window', async () => {
+  createControllerWindow();
+});
+
+ipcMain.on('window-minimize', () => {
   mainWindow?.minimize();
 });
 
-ipcMain.on('window-maximize', async (event, arg) => {
-  if (mainWindow) {
-    if (mainWindow.isMaximized()) {
-      mainWindow.unmaximize();
-    } else {
-      mainWindow.maximize();
-    }
-  }
+ipcMain.on('window-close', () => {
+  windowStore.closeAll();
 });
 
-ipcMain.on('window-close', async (event, arg) => {
-  mainWindow?.close();
-});
+ipcMain.on('start-search-on', () => {
+  mainWindow?.webContents.send('start-search-receiver-on');
+})
+
+ipcMain.on('start-search-off', () => {
+  mainWindow?.webContents.send('start-search-receiver-off');
+})
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -44,7 +52,7 @@ const installExtensions = async () => {
   return installer
     .default(
       extensions.map((name) => installer[name]),
-      forceDownload,
+      forceDownload
     )
     .catch(console.log);
 };
@@ -62,7 +70,6 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  // Create persistent session before loading URL
   let persistSession = session.fromPartition('persist:contentview');
 
   mainWindow = new BrowserWindow({
@@ -75,11 +82,12 @@ const createWindow = async () => {
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
       webviewTag: true,
-      session: persistSession, // Make sure the persistent session is applied here
+      session: persistSession,
     },
     fullscreenable: false,
     transparent: true,
     frame: false,
+    
   });
 
   const blocker = await ElectronBlocker.fromLists(fetch, [
@@ -91,8 +99,7 @@ const createWindow = async () => {
   mainWindow.setMenu(null);
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
 
-  mainWindow.on('ready-to-show', async () => {
-
+  mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
@@ -102,12 +109,52 @@ const createWindow = async () => {
       mainWindow.show();
     }
 
+    const checkControllerWindow = setInterval(() => {
+      const controllerWindow: BrowserWindow | undefined = windowStore.get('controller-window');
+      if (controllerWindow && mainWindow) {
+        const { x, y, width, height } = mainWindow.getBounds();
+        controllerWindow.setBounds({
+          x: x - 30,
+          y: y,
+          width: 30,
+          height,
+        });
+        controllerWindow.show();
+        clearInterval(checkControllerWindow);
+      }
+    }, 100);
+
+    mainWindow.on('move', () => {
+      const controllerWindow: BrowserWindow | undefined = windowStore.get('controller-window');
+      if (controllerWindow && mainWindow) {
+        const { x, y, width, height } = mainWindow.getBounds();
+        controllerWindow.setBounds({
+          x: x - 30,
+          y: y,
+          width: 30,
+          height,
+        });
+      }
+    });
+
+    mainWindow.on('minimize', () => {
+      const controllerWindow: BrowserWindow | undefined = windowStore.get('controller-window');
+      if (controllerWindow) {
+        controllerWindow.hide();
+      }
+    })
+
+    mainWindow.on('focus', () => {
+      const controllerWindow: BrowserWindow | undefined = windowStore.get('controller-window');
+      if (controllerWindow) {
+        controllerWindow.show();
+      }
+    })
+
     console.log('Blocking ads enabled in persistent session.');
-    // persistSession.loadExtension(getAssetPath('uBlock'));
   });
 
-  // Load the URL after the session and blocker have been set up
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
+  mainWindow.loadURL(resolveHtmlPath('main.html'));
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -117,6 +164,9 @@ const createWindow = async () => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
+
+  windowStore.add('main-window', mainWindow);
+  createControllerWindow();
 };
 
 app.on('window-all-closed', () => {
@@ -125,7 +175,6 @@ app.on('window-all-closed', () => {
   }
 });
 
-//Command register
 app.commandLine.appendSwitch('url');
 
 app

@@ -26,6 +26,12 @@ const electronHandler = {
     removeAllListeners(channel: string) {
       ipcRenderer.removeAllListeners(channel);
     },
+    openSettingsWindow() {
+      ipcRenderer.send('open-settings-window');
+    },
+    openControllerWindow() {
+      ipcRenderer.send('open-controller-window');
+    },
   },
 };
 
