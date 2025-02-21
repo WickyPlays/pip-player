@@ -4,7 +4,6 @@ export function convertEmbedLink(url: string, apply: boolean = true) {
     console.log("Youtube link detecting...");
   
     if (youtubeRegex.test(url)) {
-      console.log("Youtube link detected");
       let videoId = '';
   
       const youtubeUrlRegex = /(?:youtube\.com\/(?:.*v=|.*\/embed\/|.*\/v\/|.*\/watch\?.*&v=)|youtu\.be\/)([^#\&\?]*).*/;

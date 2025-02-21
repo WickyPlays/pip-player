@@ -6,8 +6,6 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 
 function AppWindow(): JSX.Element {
 
-  let [link, setLink] = useState<string>('')
-
   useEffect(() => {
     console.log("App loaded")
 
@@ -18,8 +16,8 @@ function AppWindow(): JSX.Element {
 
   return (
     <div className="app">
-      <TitleBar setLink={setLink} />
-      <Content link={link} />
+      <TitleBar />
+      <Content />
     </div>
   )
 }

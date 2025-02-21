@@ -1,39 +1,30 @@
 import './TitleBar.scss';
 import { useEffect, useState } from 'react';
-import Button from '../materials/Button';
+import MatButton from '../materials/MatButton';
 import icon from '/assets/icons/icon.png';
-import { CaretRightOutlined } from '@ant-design/icons';
-import { YoutubeOutlined } from '@ant-design/icons';
+import { CaretRightOutlined, YoutubeOutlined } from '@ant-design/icons';
 import { convertEmbedLink } from '../../utils/EmbedUtil';
+import { useAtom } from 'jotai';
+import { linkAtom } from '../atoms';
 
-interface TitleBarProps {
-  setLink: (link: string) => void;
-}
-
-export default function TitleBar({ setLink }: TitleBarProps) {
-  const [linkVal, setLinkVal] = useState<string>('');
+export default function TitleBar() {
   const [embedToggle, setEmbedToggle] = useState<boolean>(false);
+  const [link, setLink] = useAtom(linkAtom);
 
-  const runLink = function() {
-    setLink(convertEmbedLink(linkVal, embedToggle));
-  }
+  const runLink = () => {
+    setLink(convertEmbedLink(link, embedToggle));
+  };
 
   const closeApp = async () => {
-    window.electron.ipcRenderer.sendMessage(
-      'window-close' as 'ipc-example',
-      [],
-    );
+    window.electron.ipcRenderer.send('window-close', []);
   };
 
   const minimizeApp = async () => {
-    window.electron.ipcRenderer.sendMessage(
-      'window-minimize' as 'ipc-example',
-      [],
-    );
+    window.electron.ipcRenderer.send('window-minimize', []);
   };
 
   useEffect(() => {
-    runLink()
+    runLink();
   }, [embedToggle]);
 
   return (
@@ -46,26 +37,23 @@ export default function TitleBar({ setLink }: TitleBarProps) {
           type="text"
           id="query-link"
           placeholder="https://youtube.com/*"
-          value={linkVal}
-          onChange={(e) => setLinkVal(e.target.value)}
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
         />
-        <Button className="btn-play" onClick={() => runLink()}>
+        <MatButton className="btn-play" onClick={runLink}>
           <CaretRightOutlined />
-        </Button>
+        </MatButton>
       </div>
       <div className="title-dragger"></div>
       <div className="title-menu">
-        <Button className={`btn-embed-toggle ${!embedToggle ? 'btn-embed-toggle-not-run' : ''}`} onClick={() => {
-          setEmbedToggle(!embedToggle)
-        }}>
+        <MatButton
+          className={`btn-embed-toggle ${!embedToggle ? 'btn-embed-toggle-not-run' : ''}`}
+          onClick={() => setEmbedToggle(!embedToggle)}
+        >
           <YoutubeOutlined />
-        </Button>
-        <Button className="btn-minimize" onClick={minimizeApp}>
-          -
-        </Button>
-        <Button className="btn-close" onClick={closeApp}>
-          X
-        </Button>
+        </MatButton>
+        <MatButton className="btn-minimize" onClick={minimizeApp}>-</MatButton>
+        <MatButton className="btn-close" onClick={closeApp}>X</MatButton>
       </div>
     </div>
   );
