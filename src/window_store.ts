@@ -17,7 +17,7 @@ class WindowStore {
     this.windows.set(id, window);
   }
 
-  get(id: string): BrowserWindow | undefined {
+  get(id: string): BrowserWindow | undefined | null {
     return this.windows.get(id);
   }
 

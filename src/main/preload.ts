@@ -29,9 +29,6 @@ const electronHandler = {
     openSettingsWindow() {
       ipcRenderer.send('open-settings-window');
     },
-    openControllerWindow() {
-      ipcRenderer.send('open-controller-window');
-    },
   },
 };
 

@@ -1,12 +1,13 @@
 import './Screen.scss';
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { linkAtom } from '../atoms';
-import TitleBar from '../titlebar/TitleBar';
+import { isFocusAtom, linkAtom } from '../atoms';
 import SearchScreen from './SearchScreen';
+import { convertEmbedLink } from '../../utils/EmbedUtil';
 
 export default function Screen() {
   const [link] = useAtom(linkAtom);
+  const [isFocus, setIsFocus] = useAtom(isFocusAtom)
 
   useEffect(() => {
     console.log('Playing', link);
@@ -14,10 +15,9 @@ export default function Screen() {
 
   return (
     <div className='screen'>
-      <TitleBar />
       <SearchScreen />
       <div className='video-container'>
-        <webview id='video' src={link} partition='persist:contentview'></webview>
+        <webview id='video' src={isFocus ? convertEmbedLink(link) : link} partition='persist:contentview' allowFullScreen={false}></webview>
       </div>
     </div>
   );

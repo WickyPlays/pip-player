@@ -34,8 +34,16 @@ export const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
+  settingsWindow = windowStore.get('settings-window')
+  if (settingsWindow) {
+    settingsWindow.show();
+    settingsWindow.focus();
+    return;
+  }
+
   settingsWindow = new BrowserWindow({
     show: false,
+    title: 'Settings',
     width: 1024,
     height: 728,
     icon: getAssetPath('icon.png'),
@@ -43,10 +51,12 @@ export const createWindow = async () => {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
+        devTools: false
     },
   });
 
   settingsWindow.loadURL(resolveHtmlPath('settings.html'));
+  settingsWindow.setMenu(null);
 
   settingsWindow.on('ready-to-show', () => {
     if (!settingsWindow) {
@@ -57,6 +67,7 @@ export const createWindow = async () => {
   });
 
   settingsWindow.on('closed', () => {
+    windowStore.delete('settings-window');
     settingsWindow = null;
   });
 

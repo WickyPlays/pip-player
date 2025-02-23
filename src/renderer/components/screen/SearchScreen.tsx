@@ -1,27 +1,39 @@
 import { useState } from 'react'
 import './SearchScreen.scss'
+import Button from '../materials/MatButton';
+import { IoSearchOutline } from 'react-icons/io5'
+import { isSearchingAtom, linkAtom } from '../atoms';
+import { useAtom } from 'jotai';
 
 export default function SearchScreen() {
-
-  const [isSearching, setIsSearching] = useState(false);
+  const [link, setLink] = useAtom(linkAtom);
+  const [isSearching, setIsSearching] = useAtom(isSearchingAtom)
   const [inputLink, setInputLink] = useState('');
-
-  window.electron.ipcRenderer.on('start-search-receiver-on', () => {
-    setIsSearching(true);
-  })
-
-  window.electron.ipcRenderer.on('start-search-receiver-off', () => {
-    setIsSearching(false);
-  })
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputLink(event.target.value);
-  }
+  };
+
+  const handleSearch = () => {
+    setLink(inputLink);
+    setIsSearching(false)
+  };
 
   return (
     <div className='search-screen' style={{ display: isSearching ? 'flex' : 'none' }}>
       <p className='label'>Insert your URL link</p>
-      <input type="text" value={inputLink} onChange={handleInputChange} />
+      <div className='search-container'>
+        <input
+          type="text"
+          value={inputLink}
+          onChange={handleInputChange}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+        />
+        <Button className='btn-search' onClick={handleSearch}>
+          <IoSearchOutline />
+        </Button>
+      </div>
     </div>
-  )
+  );
 }
+

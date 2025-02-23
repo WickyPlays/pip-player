@@ -1,0 +1,68 @@
+.button-set {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: 25px;
+  height: 100%;
+  -webkit-user-select: none;
+  background-color: #242424;
+
+  * {
+    color: #FFF;
+  }
+
+  .logo {
+    background-image: url('../../assets/icon.png');
+    width: 22px;
+    height: 22px;
+    background-size: cover;
+    margin-bottom: 5px;
+  }
+
+  .btn-on {
+    background-color: rgb(255, 0, 0) !important;
+  }
+
+  .btn-search,
+  .btn-settings {
+    background-color: transparent;
+
+    &:hover {
+      background-color: rgb(92, 92, 92);
+    }
+  }
+
+  .dragger {
+    width: 100%;
+    height: 100%;
+    -webkit-app-region: drag;
+    cursor: grab;
+  }
+
+  .btn-search,
+  .btn-settings,
+  .btn-minimize,
+  .btn-close,
+  .btn-focus {
+    background-color: transparent;
+    color: #FFF;
+    margin: 0;
+    padding: 0;
+    width: 25px;
+    height: 25px;
+    font-size: 15px;
+
+    &:hover {
+      background-color: rgb(92, 92, 92);
+    }
+  }
+
+  .btn-focus-active {
+    background-color: rgb(0, 119, 143);
+  }
+
+  .btn-close:hover {
+    background-color: rgb(255, 0, 0);
+  }
+}

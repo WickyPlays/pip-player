@@ -14,9 +14,6 @@ const srcRendererPath = path.join(srcPath, 'renderer');
 const srcSettingsMainPath = path.join(srcPath, 'settings-main');
 const srcSettingsRendererPath = path.join(srcPath, 'settings-renderer');
 
-const srcControllerMainPath = path.join(srcPath, 'controller-main');
-const srcControllerRendererPath = path.join(srcPath, 'controller-renderer');
-
 const releasePath = path.join(rootPath, 'release');
 const appPath = path.join(releasePath, 'app');
 const appPackagePath = path.join(appPath, 'package.json');
@@ -38,8 +35,6 @@ export default {
   srcRendererPath,
   srcSettingsMainPath,
   srcSettingsRendererPath,
-  srcControllerMainPath,
-  srcControllerRendererPath,
   releasePath,
   appPath,
   appPackagePath,

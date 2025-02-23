@@ -1,7 +1,6 @@
 import { createRoot } from 'react-dom/client';
-
-const App = () => <div>Settings window!</div>;
+import SettingsApp from './SettingsApp';
 
 const container = document.getElementById('root')!;
 const root = createRoot(container);
-root.render(<App />);
+root.render(<SettingsApp />);

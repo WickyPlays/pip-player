@@ -96,6 +96,7 @@
     "jotai": "^2.12.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^6.16.0"
   },
   "devDependencies": {

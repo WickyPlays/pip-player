@@ -1,44 +1,24 @@
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session, screen } from 'electron';
 import { resolveHtmlPath } from './util';
 import { createWindow as createSettingsWindow } from '../settings-main/settings-main';
-import { createWindow as createControllerWindow } from '../controller-main/controller-main';
 import { windowStore } from '../window_store';
 import { ElectronBlocker } from '@ghostery/adblocker-electron';
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('open-settings-window', async () => {
-  createSettingsWindow();
-});
-
-ipcMain.on('open-controller-window', async () => {
-  createControllerWindow();
-});
+ipcMain.on('open-settings-window', async () => createSettingsWindow());
 
 ipcMain.on('window-minimize', () => {
   mainWindow?.minimize();
 });
-
-ipcMain.on('window-close', () => {
-  windowStore.closeAll();
-});
-
-ipcMain.on('start-search-on', () => {
-  mainWindow?.webContents.send('start-search-receiver-on');
-})
-
-ipcMain.on('start-search-off', () => {
-  mainWindow?.webContents.send('start-search-receiver-off');
-})
+ipcMain.on('window-close', () => windowStore.closeAll());
 
 if (process.env.NODE_ENV === 'production') {
-  const sourceMapSupport = require('source-map-support');
-  sourceMapSupport.install();
+  require('source-map-support').install();
 }
 
-const isDebug =
-  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
   require('electron-debug')();
@@ -49,28 +29,34 @@ const installExtensions = async () => {
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
   const extensions = ['REACT_DEVELOPER_TOOLS'];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload
-    )
-    .catch(console.log);
+  return installer.default(
+    extensions.map((name) => installer[name]),
+    forceDownload
+  ).catch(console.log);
+};
+
+const checkWindowPosition = () => {
+  if (!mainWindow) return;
+  
+  const { width } = screen.getPrimaryDisplay().workAreaSize;
+  const bounds = mainWindow.getBounds();
+  
+  if (bounds.x <= width * 0.25) {
+    mainWindow.webContents.send('window-position', 'left');
+  } else if (bounds.x + bounds.width >= width * 0.75) {
+    mainWindow.webContents.send('window-position', 'right');
+  }
 };
 
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
+  if (isDebug) await installExtensions();
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../../assets');
 
-  const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
-  };
-
-  let persistSession = session.fromPartition('persist:contentview');
+  const getAssetPath = (...paths: string[]): string => path.join(RESOURCES_PATH, ...paths);
+  const persistSession = session.fromPartition('persist:contentview');
 
   mainWindow = new BrowserWindow({
     show: false,
@@ -87,102 +73,47 @@ const createWindow = async () => {
     fullscreenable: false,
     transparent: true,
     frame: false,
-    
   });
 
-  const blocker = await ElectronBlocker.fromLists(fetch, [
-    'https://easylist.to/easylist/easylist.txt'
-  ]);
-
+  const blocker = await ElectronBlocker.fromLists(fetch, ['https://easylist.to/easylist/easylist.txt']);
   blocker.enableBlockingInSession(persistSession);
 
   mainWindow.setMenu(null);
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
 
-  mainWindow.on('ready-to-show', () => {
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined');
-    }
+  mainWindow.once('ready-to-show', () => {
+    if (!mainWindow) throw new Error('"mainWindow" is not defined');
+
     if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {
       mainWindow.show();
     }
-
-    const checkControllerWindow = setInterval(() => {
-      const controllerWindow: BrowserWindow | undefined = windowStore.get('controller-window');
-      if (controllerWindow && mainWindow) {
-        const { x, y, width, height } = mainWindow.getBounds();
-        controllerWindow.setBounds({
-          x: x - 30,
-          y: y,
-          width: 30,
-          height,
-        });
-        controllerWindow.show();
-        clearInterval(checkControllerWindow);
-      }
-    }, 100);
-
-    mainWindow.on('move', () => {
-      const controllerWindow: BrowserWindow | undefined = windowStore.get('controller-window');
-      if (controllerWindow && mainWindow) {
-        const { x, y, width, height } = mainWindow.getBounds();
-        controllerWindow.setBounds({
-          x: x - 30,
-          y: y,
-          width: 30,
-          height,
-        });
-      }
-    });
-
-    mainWindow.on('minimize', () => {
-      const controllerWindow: BrowserWindow | undefined = windowStore.get('controller-window');
-      if (controllerWindow) {
-        controllerWindow.hide();
-      }
-    })
-
-    mainWindow.on('focus', () => {
-      const controllerWindow: BrowserWindow | undefined = windowStore.get('controller-window');
-      if (controllerWindow) {
-        controllerWindow.show();
-      }
-    })
-
-    console.log('Blocking ads enabled in persistent session.');
   });
 
   mainWindow.loadURL(resolveHtmlPath('main.html'));
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+  mainWindow.on('closed', () => (mainWindow = null));
 
   mainWindow.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
 
+  mainWindow.on('moved', checkWindowPosition);
+
   windowStore.add('main-window', mainWindow);
-  createControllerWindow();
 };
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  if (process.platform !== 'darwin') app.quit();
 });
 
 app.commandLine.appendSwitch('url');
 
-app
-  .whenReady()
-  .then(() => {
-    createWindow();
-    app.on('activate', () => {
-      if (mainWindow === null) createWindow();
-    });
-  })
-  .catch(console.log);
+app.whenReady().then(() => {
+  createWindow();
+  app.on('activate', () => {
+    if (mainWindow === null) createWindow();
+  });
+}).catch(console.log);
