@@ -5,7 +5,7 @@ export default function SettingsMisc() {
     <div className='settings-misc'>
       <h1>Miscellaneous</h1>
       <div className='content'>
-
+        <p>Coming soon</p>
       </div>
     </div>
   )

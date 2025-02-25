@@ -95,7 +95,17 @@ const checkWindowPosition = () => {
 };
 
 const openUrlFromProtocol = (url?: string) => {
-  mainWindow?.webContents.send('window-load-url', decodeURIComponent(url || ''));
+  if (!url || !isUrl(url)) return;
+  mainWindow?.webContents.send('window-load-url', decodeURIComponent(url));
+}
+
+const isUrl = (url: string) => {
+  try {
+    new URL(url);
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 const gotTheLock = app.requestSingleInstanceLock();

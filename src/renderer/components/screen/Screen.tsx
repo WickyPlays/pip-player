@@ -4,6 +4,7 @@ import { isFocusAtom, linkAtom } from '../atoms';
 import SearchScreen from './SearchScreen';
 import ScreenYoutube from './media/ScreenYoutube';
 import { getLinkType, LinkType } from '../../utils/EmbedUtil';
+import ScreenEmpty from './media/ScreenEmpty';
 
 export default function Screen() {
   const [link] = useAtom(linkAtom);
@@ -14,6 +15,9 @@ export default function Screen() {
 
   return (
     <div className='screen'>
+      {
+        !link && <ScreenEmpty />
+      }
       <SearchScreen />
       <div className='video-container'>
         {isFocus && isYouTube ? (
