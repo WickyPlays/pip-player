@@ -1,9 +1,10 @@
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, session, screen } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session, screen, net, protocol } from 'electron';
 import { resolveHtmlPath } from './util';
 import { createWindow as createSettingsWindow } from '../settings-main/settings-main';
 import { windowStore } from '../window_store';
 import { ElectronBlocker } from '@ghostery/adblocker-electron';
+import url from 'url';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -12,6 +13,7 @@ ipcMain.on('open-settings-window', async () => createSettingsWindow());
 ipcMain.on('window-minimize', () => {
   mainWindow?.minimize();
 });
+
 ipcMain.on('window-close', () => windowStore.closeAll());
 
 if (process.env.NODE_ENV === 'production') {
@@ -37,18 +39,18 @@ const installExtensions = async () => {
 
 const checkWindowPosition = () => {
   if (!mainWindow) return;
-  
+
   const { width } = screen.getPrimaryDisplay().workAreaSize;
   const bounds = mainWindow.getBounds();
-  
-  if (bounds.x <= width * 0.25) {
+
+  if (bounds.x <= width * 0.35) {
     mainWindow.webContents.send('window-position', 'left');
-  } else if (bounds.x + bounds.width >= width * 0.75) {
+  } else {
     mainWindow.webContents.send('window-position', 'right');
   }
 };
 
-const createWindow = async () => {
+const createWindow = async (loadUrl?: string) => {
   if (isDebug) await installExtensions();
 
   const RESOURCES_PATH = app.isPackaged
@@ -69,6 +71,7 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
       webviewTag: true,
       session: persistSession,
+      devTools: true,
     },
     fullscreenable: false,
     transparent: true,
@@ -89,6 +92,8 @@ const createWindow = async () => {
     } else {
       mainWindow.show();
     }
+
+    mainWindow.webContents.send('window-load-url', loadUrl);
   });
 
   mainWindow.loadURL(resolveHtmlPath('main.html'));
@@ -101,6 +106,7 @@ const createWindow = async () => {
   });
 
   mainWindow.on('moved', checkWindowPosition);
+  mainWindow.on('resized', checkWindowPosition);
 
   windowStore.add('main-window', mainWindow);
 };
@@ -113,7 +119,17 @@ app.commandLine.appendSwitch('url');
 
 app.whenReady().then(() => {
   createWindow();
+  let foundUrl: string
+
+  protocol.handle('pipplayer', (request) => {
+    const parsedUrl = decodeURIComponent(request.url.replace('pipplayer://', ''));
+    foundUrl = parsedUrl
+    return net.fetch(parsedUrl);
+  });
+
   app.on('activate', () => {
-    if (mainWindow === null) createWindow();
+    if (mainWindow === null) {
+      createWindow(foundUrl);
+    }
   });
 }).catch(console.log);

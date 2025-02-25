@@ -1,0 +1,23 @@
+.settings-extension {
+  padding: 0px 20px;
+
+  h1 {
+    font-size: 25px;
+  }
+
+  .btn-install {
+    padding: 10px 20px;
+    background-color: #585858;
+    border: none;
+    color: #FFF;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #5c5c5c;
+    }
+
+    &:active {
+      background-color: #474747;
+    }
+  }
+}

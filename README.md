@@ -1,4 +1,4 @@
-Welcome to PiP Player 1.1.0
+Welcome to PiP Player 1.2.0
 
 > [!NOTE]
 > A word of warning: this app is HEAVILY under development as you certainly might see bugs here and there. Don't be afraid to submit issues you found via [Issues](https://github.com/WickyPlays/pip-player/issues)
@@ -42,13 +42,13 @@ Note: You can use `npm` if you want to.
 To start, simply use:
 
 ```
-yarn start
+npm start
 ```
 
 Building app using the following command:
 
 ```
-yarn run package
+npm run package
 ```
 
 Enjoy your code!

@@ -5,4 +5,4 @@ export const embedToggleAtom = atom(true)
 //Search
 export const isSearchingAtom = atom(false)
 //Focus
-export const isFocusAtom = atom(false)
+export const isFocusAtom = atom(true)

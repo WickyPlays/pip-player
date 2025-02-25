@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './SearchScreen.scss'
 import Button from '../materials/MatButton';
 import { IoSearchOutline } from 'react-icons/io5'
@@ -18,6 +18,10 @@ export default function SearchScreen() {
     setLink(inputLink);
     setIsSearching(false)
   };
+
+  window.electron.ipcRenderer.on('window-load-url', (url: any) => {
+    console.log(url)
+  })
 
   return (
     <div className='search-screen' style={{ display: isSearching ? 'flex' : 'none' }}>

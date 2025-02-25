@@ -1,0 +1,27 @@
+.settings-app {
+  background-color: rgb(43, 43, 43);
+  width: 100vw;
+  height: 100vh;
+  color: #FFF;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 40px 2rem;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+
+  .tab {
+    border-right: 1px solid #5c5c5c;
+    height: 100%;
+  }
+
+  .tab-item {
+    cursor: pointer;
+    padding: 15px 20px;
+    transition: background-color 0.3s ease;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+
+    &.active {
+      background-color: rgb(255, 0, 0);
+    }
+  }
+}
