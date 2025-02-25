@@ -1,21 +1,36 @@
-export function convertEmbedLink(url: string, apply: boolean = true) {
-  if (apply) {
-    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
-    console.log("Youtube link detecting...");
+import { BrowserWindow } from "electron";
+import { windowStore } from "../../window_store";
+
+export const LinkType = {
+  YOUTUBE: 'youtube',
+  OTHER: 'other'
+}
+
+export function convertEmbedLink(url: string) {
   
-    if (youtubeRegex.test(url)) {
-      console.log("Youtube link detected");
-      let videoId = '';
-  
-      const youtubeUrlRegex = /(?:youtube\.com\/(?:.*v=|.*\/embed\/|.*\/v\/|.*\/watch\?.*&v=)|youtu\.be\/)([^#\&\?]*).*/;
-      const match = url.match(youtubeUrlRegex);
-  
-      if (match && match[1]) {
-        videoId = match[1];
-        return `https://www.youtube.com/embed/${videoId}`;
-      }
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+  console.log("Youtube link detecting...");
+
+  if (youtubeRegex.test(url)) {
+    let videoId = '';
+
+    const youtubeUrlRegex = /(?:youtube\.com\/(?:.*v=|.*\/embed\/|.*\/v\/|.*\/watch\?.*&v=)|youtu\.be\/)([^#\&\?]*).*/;
+    const match = url.match(youtubeUrlRegex);
+
+    if (match && match[1]) {
+      videoId = match[1];
+      
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
     }
   }
   
   return url;
+}
+
+export function getLinkType(url: string) {
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+  if (youtubeRegex.test(url)) {
+    return LinkType.YOUTUBE;
+  }
+  return LinkType.OTHER;
 }

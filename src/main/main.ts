@@ -1,36 +1,17 @@
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session, screen, net, protocol, dialog } from 'electron';
 import { resolveHtmlPath } from './util';
-import fs from 'fs';
+import { createWindow as createSettingsWindow } from '../settings-main/settings-main';
+import { windowStore } from '../window_store';
 import { ElectronBlocker } from '@ghostery/adblocker-electron';
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('window-minimize', async (event, arg) => {
-  mainWindow?.minimize();
-});
-
-ipcMain.on('window-maximize', async (event, arg) => {
-  if (mainWindow) {
-    if (mainWindow.isMaximized()) {
-      mainWindow.unmaximize();
-    } else {
-      mainWindow.maximize();
-    }
-  }
-});
-
-ipcMain.on('window-close', async (event, arg) => {
-  mainWindow?.close();
-});
+const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (process.env.NODE_ENV === 'production') {
-  const sourceMapSupport = require('source-map-support');
-  sourceMapSupport.install();
+  require('source-map-support').install();
 }
-
-const isDebug =
-  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
   require('electron-debug')();
@@ -41,32 +22,24 @@ const installExtensions = async () => {
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
   const extensions = ['REACT_DEVELOPER_TOOLS'];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload,
-    )
-    .catch(console.log);
+  return installer.default(
+    extensions.map((name) => installer[name]),
+    forceDownload
+  ).catch(console.log);
 };
 
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
+  if (isDebug) await installExtensions();
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../../assets');
 
-  const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
-  };
-
-  // Create persistent session before loading URL
-  let persistSession = session.fromPartition('persist:contentview');
+  const getAssetPath = (...paths: string[]): string => path.join(RESOURCES_PATH, ...paths);
+  const persistSession = session.fromPartition('persist:contentview');
 
   mainWindow = new BrowserWindow({
-    show: false,
+    show: true,
     width: 480,
     height: 280,
     icon: getAssetPath('icon.png'),
@@ -75,65 +48,100 @@ const createWindow = async () => {
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
       webviewTag: true,
-      session: persistSession, // Make sure the persistent session is applied here
+      session: persistSession,
+      devTools: true,
     },
     fullscreenable: false,
     transparent: true,
     frame: false,
   });
 
-  const blocker = await ElectronBlocker.fromLists(fetch, [
-    'https://easylist.to/easylist/easylist.txt'
-  ]);
-
+  const blocker = await ElectronBlocker.fromLists(fetch, ['https://easylist.to/easylist/easylist.txt']);
   blocker.enableBlockingInSession(persistSession);
 
   mainWindow.setMenu(null);
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
 
-  mainWindow.on('ready-to-show', async () => {
-
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined');
-    }
-    if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
-    } else {
-      mainWindow.show();
-    }
-
-    console.log('Blocking ads enabled in persistent session.');
-    // persistSession.loadExtension(getAssetPath('uBlock'));
+  mainWindow.once('ready-to-show', () => {
+    if (!mainWindow) throw new Error('"mainWindow" is not defined');
+    mainWindow.show();
+    openUrlFromProtocol(process.argv[1].replace(/^pipplayer\:\/\//, ''));
   });
 
-  // Load the URL after the session and blocker have been set up
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
+  mainWindow.loadURL(resolveHtmlPath('main.html'));
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+  mainWindow.on('closed', () => (mainWindow = null));
+  mainWindow.on('moved', checkWindowPosition);
+  mainWindow.on('resized', checkWindowPosition);
 
   mainWindow.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
+
+  windowStore.add('main-window', mainWindow);
 };
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
+const checkWindowPosition = () => {
+  if (!mainWindow) return;
+  const { width } = screen.getPrimaryDisplay().workAreaSize;
+  const bounds = mainWindow.getBounds();
+
+  if (bounds.x <= width * 0.35) {
+    mainWindow.webContents.send('window-position', 'left');
+  } else {
+    mainWindow.webContents.send('window-position', 'right');
   }
+};
+
+const openUrlFromProtocol = (url?: string) => {
+  if (!url || !isUrl(url)) return;
+  mainWindow?.webContents.send('window-load-url', decodeURIComponent(url));
+}
+
+const isUrl = (url: string) => {
+  try {
+    new URL(url);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+    openUrlFromProtocol(commandLine.pop()?.replace(/^pipplayer\:\/\//, ''));
+  });
+
+  app.whenReady().then(() => {
+    let foundUrl: string = '';
+
+    if (mainWindow === null) {
+      createWindow();
+    }
+  }).catch(console.log);
+}
+
+//MacOS
+app.on('open-url', (event, url) => {
+  openUrlFromProtocol(url);  
 });
 
-//Command register
-app.commandLine.appendSwitch('url');
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
 
-app
-  .whenReady()
-  .then(() => {
-    createWindow();
-    app.on('activate', () => {
-      if (mainWindow === null) createWindow();
-    });
-  })
-  .catch(console.log);
+ipcMain.on('open-settings-window', async () => createSettingsWindow());
+ipcMain.on('window-minimize', () => {
+  mainWindow?.minimize();
+});
+ipcMain.on('window-close', () => windowStore.closeAll());
+
+app.commandLine.appendSwitch('url');

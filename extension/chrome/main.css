@@ -1,0 +1,79 @@
+body {
+  width: 250px;
+  height: 80px;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+a {
+  color: #FFF;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  padding: 1px;
+}
+
+.title {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(36, 36, 36);
+  color: #FFF;
+  padding: 5px 0;
+  gap: 3px;
+}
+
+.title-logo {
+  background-image: url('./icon.png');
+  width: 20px;
+  height: 20px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.title-text {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.content {
+  background-color: rgb(86, 86, 86);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #FFF;
+  padding: 0 15px;
+  box-sizing: border-box;
+  gap: 10px;
+}
+
+.note {
+  font-size: 12px;
+}
+
+#btn-open-link {
+  width: 100%;
+  height: 30px;
+  background-color: rgb(255, 0, 0);
+  color: #FFF;
+  border: none;
+  outline: none;
+  box-shadow: 0 0 0 0 rgba(0,0,0,0), 0 0 0 0 rgba(0,0,0,0);
+  cursor: pointer;
+}
+
+#btn-open-link:hover {
+  background-color: rgb(202, 0, 0);
+}
+
+#btn-open-link:active {
+  background-color: rgb(255, 26, 26);
+}

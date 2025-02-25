@@ -1,6 +1,6 @@
 {
   "name": "pip-player",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Picture-in-Picture Player",
   "keywords": [
     "electron",
@@ -92,9 +92,13 @@
     "cross-fetch": "^4.0.0",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
+    "electron-store": "^10.0.1",
     "electron-updater": "^6.1.4",
+    "jotai": "^2.12.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
+    "react-player": "^2.16.0",
     "react-router-dom": "^6.16.0"
   },
   "devDependencies": {
@@ -110,6 +114,7 @@
     "@types/react-dom": "^18.2.7",
     "@types/react-test-renderer": "^18.0.1",
     "@types/webpack-bundle-analyzer": "^4.6.0",
+    "@types/youtube-player": "^5.5.11",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
     "browserslist-config-erb": "^0.0.3",
@@ -154,7 +159,14 @@
     "productName": "PIP-Player",
     "appId": "me.wickyplays.pipplayer",
     "asar": true,
-    "asarUnpack": "**\\*.{node,dll}",
+    "protocols": [
+      {
+        "name": "PIP-Player Protocol",
+        "schemes": [
+          "pipplayer"
+        ]
+      }
+    ],
     "files": [
       "dist",
       "node_modules",
@@ -176,24 +188,18 @@
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false
     },
-    "dmg": {
-      "contents": [
-        {
-          "x": 130,
-          "y": 220
-        },
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    },
     "win": {
       "target": [
         "nsis",
         "portable"
+      ],
+      "protocols": [
+        {
+          "name": "PIP-Player Protocol",
+          "schemes": [
+            "pipplayer"
+          ]
+        }
       ]
     },
     "linux": {
@@ -201,7 +207,15 @@
         "AppImage",
         "deb"
       ],
-      "category": "Development"
+      "category": "Development",
+      "protocols": [
+        {
+          "name": "PIP-Player Protocol",
+          "schemes": [
+            "pipplayer"
+          ]
+        }
+      ]
     },
     "directories": {
       "app": "release/app",

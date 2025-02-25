@@ -1,0 +1,84 @@
+.settings-about {
+  padding: 0px 20px;
+  font-family: Arial, sans-serif;
+  color: #333;
+
+  h1 {
+    font-size: 25px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #FFF;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .meta {
+      padding: 12px;
+
+      p {
+        margin: 4px 0;
+        font-size: 16px;
+        color: #ffffff;
+      }
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 15px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+
+      &:hover {
+        background: #0056b3;
+      }
+    }
+
+    .contact {
+      font-size: 14px;
+      color: #bcbcbc;
+      margin-top: 10px;
+
+      span {
+        cursor: pointer;
+        text-decoration: underline;
+
+        &:hover {
+          color: #FFF;
+        }
+      }
+    }
+
+    .source {
+      color: #FFF;
+
+      .title {
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .btn-source {
+        background-color: rgb(82, 82, 82);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        height: 35px;
+        padding: 0 15px;
+        font-size: 13px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: rgb(100, 100, 100);
+        }
+      }
+    }
+  }
+}
