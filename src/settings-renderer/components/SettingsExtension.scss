@@ -5,19 +5,36 @@
     font-size: 25px;
   }
 
+  .btn-set {
+    display: flex;
+    gap: 10px;
+  }
+
   .btn-install {
-    padding: 10px 20px;
     background-color: #585858;
     border: none;
     color: #FFF;
     cursor: pointer;
+    width: 45px;
+    height: 45px;
 
     &:hover {
-      background-color: #5c5c5c;
+      background-color: #797979;
     }
 
     &:active {
-      background-color: #474747;
+      background-color: #ff0000;
+    }
+  }
+
+  .note {
+    font-size: 13px;
+    color: #bfbfbf;
+    padding: 0 5px;
+    margin-top: 10px;
+
+    .icon {
+      transform: translateY(3px);
     }
   }
 }

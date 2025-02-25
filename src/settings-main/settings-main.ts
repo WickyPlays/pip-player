@@ -1,5 +1,5 @@
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { resolveHtmlPath } from '../main/util';
 import { windowStore } from '../window_store';
 
@@ -20,6 +20,14 @@ const installExtensions = async () => {
     )
     .catch(console.log);
 };
+
+ipcMain.on('open-link', (event, arg) => {
+  shell.openExternal(arg);
+});
+
+ipcMain.on('open-email', (event, arg) => {
+  shell.openExternal(`mailto:${arg}`);
+})
 
 export const createWindow = async () => {
   if (isDebug) {
