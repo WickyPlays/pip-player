@@ -34,7 +34,7 @@ Clone the repo and install dependencies:
 ```bash
 git clone https://github.com/WickyPlays/pip-player.git
 cd pip-player
-yarn install
+npm install
 ```
 
 Note: You can use `npm` if you want to.

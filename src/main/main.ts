@@ -1,26 +1,17 @@
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, session, screen, net, protocol } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session, screen, net, protocol, dialog } from 'electron';
 import { resolveHtmlPath } from './util';
 import { createWindow as createSettingsWindow } from '../settings-main/settings-main';
 import { windowStore } from '../window_store';
 import { ElectronBlocker } from '@ghostery/adblocker-electron';
-import url from 'url';
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('open-settings-window', async () => createSettingsWindow());
-
-ipcMain.on('window-minimize', () => {
-  mainWindow?.minimize();
-});
-
-ipcMain.on('window-close', () => windowStore.closeAll());
+const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (process.env.NODE_ENV === 'production') {
   require('source-map-support').install();
 }
-
-const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
   require('electron-debug')();
@@ -37,20 +28,7 @@ const installExtensions = async () => {
   ).catch(console.log);
 };
 
-const checkWindowPosition = () => {
-  if (!mainWindow) return;
-
-  const { width } = screen.getPrimaryDisplay().workAreaSize;
-  const bounds = mainWindow.getBounds();
-
-  if (bounds.x <= width * 0.35) {
-    mainWindow.webContents.send('window-position', 'left');
-  } else {
-    mainWindow.webContents.send('window-position', 'right');
-  }
-};
-
-const createWindow = async (loadUrl?: string) => {
+const createWindow = async () => {
   if (isDebug) await installExtensions();
 
   const RESOURCES_PATH = app.isPackaged
@@ -61,7 +39,7 @@ const createWindow = async (loadUrl?: string) => {
   const persistSession = session.fromPartition('persist:contentview');
 
   mainWindow = new BrowserWindow({
-    show: false,
+    show: true,
     width: 480,
     height: 280,
     icon: getAssetPath('icon.png'),
@@ -86,50 +64,74 @@ const createWindow = async (loadUrl?: string) => {
 
   mainWindow.once('ready-to-show', () => {
     if (!mainWindow) throw new Error('"mainWindow" is not defined');
-
-    if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
-    } else {
-      mainWindow.show();
-    }
-
-    mainWindow.webContents.send('window-load-url', loadUrl);
+    mainWindow.show();
+    openUrlFromProtocol(process.argv[1].replace(/^pipplayer\:\/\//, ''));
   });
 
   mainWindow.loadURL(resolveHtmlPath('main.html'));
 
   mainWindow.on('closed', () => (mainWindow = null));
+  mainWindow.on('moved', checkWindowPosition);
+  mainWindow.on('resized', checkWindowPosition);
 
   mainWindow.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
 
-  mainWindow.on('moved', checkWindowPosition);
-  mainWindow.on('resized', checkWindowPosition);
-
   windowStore.add('main-window', mainWindow);
 };
+
+const checkWindowPosition = () => {
+  if (!mainWindow) return;
+  const { width } = screen.getPrimaryDisplay().workAreaSize;
+  const bounds = mainWindow.getBounds();
+
+  if (bounds.x <= width * 0.35) {
+    mainWindow.webContents.send('window-position', 'left');
+  } else {
+    mainWindow.webContents.send('window-position', 'right');
+  }
+};
+
+const openUrlFromProtocol = (url?: string) => {
+  mainWindow?.webContents.send('window-load-url', decodeURIComponent(url || ''));
+}
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+    openUrlFromProtocol(commandLine.pop()?.replace(/^pipplayer\:\/\//, ''));
+  });
+
+  app.whenReady().then(() => {
+    let foundUrl: string = '';
+
+    if (mainWindow === null) {
+      createWindow();
+    }
+  }).catch(console.log);
+}
+
+//MacOS
+app.on('open-url', (event, url) => {
+  openUrlFromProtocol(url);  
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
+ipcMain.on('open-settings-window', async () => createSettingsWindow());
+ipcMain.on('window-minimize', () => {
+  mainWindow?.minimize();
+});
+ipcMain.on('window-close', () => windowStore.closeAll());
+
 app.commandLine.appendSwitch('url');
-
-app.whenReady().then(() => {
-  createWindow();
-  let foundUrl: string
-
-  protocol.handle('pipplayer', (request) => {
-    const parsedUrl = decodeURIComponent(request.url.replace('pipplayer://', ''));
-    foundUrl = parsedUrl
-    return net.fetch(parsedUrl);
-  });
-
-  app.on('activate', () => {
-    if (mainWindow === null) {
-      createWindow(foundUrl);
-    }
-  });
-}).catch(console.log);

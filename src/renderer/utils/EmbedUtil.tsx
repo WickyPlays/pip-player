@@ -1,6 +1,11 @@
 import { BrowserWindow } from "electron";
 import { windowStore } from "../../window_store";
 
+export const LinkType = {
+  YOUTUBE: 'youtube',
+  OTHER: 'other'
+}
+
 export function convertEmbedLink(url: string) {
   
   const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
@@ -20,4 +25,12 @@ export function convertEmbedLink(url: string) {
   }
   
   return url;
+}
+
+export function getLinkType(url: string) {
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+  if (youtubeRegex.test(url)) {
+    return LinkType.YOUTUBE;
+  }
+  return LinkType.OTHER;
 }

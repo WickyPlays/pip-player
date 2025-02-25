@@ -1,0 +1,12 @@
+{
+  "name": "PIP-Player Loader",
+  "description": "An extension to redirect link to PIP-Player",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": ["tabs"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "main.html",
+    "default_icon": "icon.png"
+  }
+}

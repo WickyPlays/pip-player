@@ -159,7 +159,14 @@
     "productName": "PIP-Player",
     "appId": "me.wickyplays.pipplayer",
     "asar": true,
-    "asarUnpack": "**\\*.{node,dll}",
+    "protocols": [
+      {
+        "name": "PIP-Player Protocol",
+        "schemes": [
+          "pipplayer"
+        ]
+      }
+    ],
     "files": [
       "dist",
       "node_modules",
@@ -181,24 +188,18 @@
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false
     },
-    "dmg": {
-      "contents": [
-        {
-          "x": 130,
-          "y": 220
-        },
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    },
     "win": {
       "target": [
         "nsis",
         "portable"
+      ],
+      "protocols": [
+        {
+          "name": "PIP-Player Protocol",
+          "schemes": [
+            "pipplayer"
+          ]
+        }
       ]
     },
     "linux": {
@@ -206,7 +207,15 @@
         "AppImage",
         "deb"
       ],
-      "category": "Development"
+      "category": "Development",
+      "protocols": [
+        {
+          "name": "PIP-Player Protocol",
+          "schemes": [
+            "pipplayer"
+          ]
+        }
+      ]
     },
     "directories": {
       "app": "release/app",

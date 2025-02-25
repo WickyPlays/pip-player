@@ -20,7 +20,8 @@ export default function SearchScreen() {
   };
 
   window.electron.ipcRenderer.on('window-load-url', (url: any) => {
-    console.log(url)
+    setInputLink(url)
+    setLink(url)
   })
 
   return (
