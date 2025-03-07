@@ -1,5 +1,5 @@
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, session, screen, net, protocol, dialog } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session, screen, protocol } from 'electron';
 import { resolveHtmlPath } from './util';
 import { createWindow as createSettingsWindow } from '../settings-main/settings-main';
 import { windowStore } from '../window_store';
@@ -65,7 +65,11 @@ const createWindow = async () => {
   mainWindow.once('ready-to-show', () => {
     if (!mainWindow) throw new Error('"mainWindow" is not defined');
     mainWindow.show();
-    openUrlFromProtocol(process.argv[1].replace(/^pipplayer\:\/\//, ''));
+
+    const arg = process.argv.length > 1 ? process.argv[1] : null;
+    if (arg && isUrl(arg)) {
+      openUrlFromProtocol(arg.replace(/^pipplayer:\/\//, ''));
+    }
   });
 
   mainWindow.loadURL(resolveHtmlPath('main.html'));
@@ -97,7 +101,7 @@ const checkWindowPosition = () => {
 const openUrlFromProtocol = (url?: string) => {
   if (!url || !isUrl(url)) return;
   mainWindow?.webContents.send('window-load-url', decodeURIComponent(url));
-}
+};
 
 const isUrl = (url: string) => {
   try {
@@ -106,7 +110,7 @@ const isUrl = (url: string) => {
   } catch (_) {
     return false;
   }
-}
+};
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -117,21 +121,25 @@ if (!gotTheLock) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     }
-    openUrlFromProtocol(commandLine.pop()?.replace(/^pipplayer\:\/\//, ''));
+
+    const urlArg = commandLine.length > 1 ? commandLine.pop() : null;
+    if (urlArg && isUrl(urlArg)) {
+      openUrlFromProtocol(urlArg.replace(/^pipplayer:\/\//, ''));
+    }
   });
 
   app.whenReady().then(() => {
-    let foundUrl: string = '';
-
     if (mainWindow === null) {
       createWindow();
     }
   }).catch(console.log);
 }
 
-//MacOS
+// MacOS
 app.on('open-url', (event, url) => {
-  openUrlFromProtocol(url);  
+  if (url && isUrl(url)) {
+    openUrlFromProtocol(url);
+  }
 });
 
 app.on('window-all-closed', () => {

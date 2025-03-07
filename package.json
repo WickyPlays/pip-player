@@ -202,6 +202,21 @@
         }
       ]
     },
+    "nsis": {
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "deleteAppDataOnUninstall": true,
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PIP-Player",
+      "perMachine": true,
+      "include": "build/installer.nsh"
+    },
     "linux": {
       "target": [
         "AppImage",

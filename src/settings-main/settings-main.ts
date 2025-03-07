@@ -29,6 +29,10 @@ ipcMain.on('open-email', (event, arg) => {
   shell.openExternal(`mailto:${arg}`);
 })
 
+ipcMain.on('open-cmd', (event, args) => {
+  shell.openPath(args);
+})
+
 export const createWindow = async () => {
   if (isDebug) {
     await installExtensions();
