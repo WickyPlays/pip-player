@@ -6,18 +6,18 @@ export default function SettingsExtension() {
   const [hoveredBrowser, setHoveredBrowser] = useState(null);
 
   const browserNames = {
-    chrome: 'Chrome',
+    chrome: 'Chrome (unavailable)',
     edge: 'Edge',
-    firefox: 'Firefox'
+    firefox: 'Firefox (unavailable)'
   };
 
   const extensionLinks = {
     chrome: 'https://chrome.google.com/webstore/detail/your-extension-id',
-    edge: 'https://microsoftedge.microsoft.com/addons/detail/your-extension-id',
+    edge: 'https://microsoftedge.microsoft.com/addons/detail/pipplayer-loader/jkdibbdnahmnnghjfojfeocdahaoeaam',
     firefox: 'https://addons.mozilla.org/en-US/firefox/addon/your-extension-id'
   };
 
-  const openLink = (link: string) => {
+  const openLink = (link) => {
     window.electron.ipcRenderer.send('open-link', link);
   };
 
@@ -30,10 +30,9 @@ export default function SettingsExtension() {
         </p>
         <div className='btn-set'>
           <button
-            className='btn-install'
+            className='btn-install btn-install-disabled'
             onMouseEnter={() => setHoveredBrowser(browserNames.chrome)}
             onMouseLeave={() => setHoveredBrowser(null)}
-            onClick={() => openLink(extensionLinks.chrome)}
           >
             <IoLogoChrome size={20} />
           </button>
@@ -46,10 +45,9 @@ export default function SettingsExtension() {
             <IoLogoEdge size={20} />
           </button>
           <button
-            className='btn-install'
+            className='btn-install btn-install-disabled'
             onMouseEnter={() => setHoveredBrowser(browserNames.firefox)}
             onMouseLeave={() => setHoveredBrowser(null)}
-            onClick={() => openLink(extensionLinks.firefox)}
           >
             <IoLogoFirefox size={20} />
           </button>
@@ -57,7 +55,7 @@ export default function SettingsExtension() {
         <div className='note'>
           <IoWarning className='icon' size={20} />
           <span>
-            Due to restriction made by the browser, the system cannot automatically install the extension for you, so you will have to do this by yourself.
+            Due to restrictions made by the browser, the system cannot automatically install the extension for you, so you will have to do this by yourself.
           </span>
         </div>
       </div>

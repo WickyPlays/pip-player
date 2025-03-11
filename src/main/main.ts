@@ -1,11 +1,29 @@
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, session, screen, net, protocol, dialog } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session, screen, protocol } from 'electron';
 import { resolveHtmlPath } from './util';
 import { createWindow as createSettingsWindow } from '../settings-main/settings-main';
 import { windowStore } from '../window_store';
 import { ElectronBlocker } from '@ghostery/adblocker-electron';
+import Store from 'electron-store';
 
 let mainWindow: BrowserWindow | null = null;
+
+const schema = {
+  windowDefaultPosition: {
+    type: 'string',
+    default: 'mid',
+  },
+  autoplayMedia: {
+    type: 'boolean',
+    default: false
+  },
+  minimizedOnStart: {
+    type: 'boolean',
+    default: false
+  }
+};
+
+const store = new Store({ schema });
 
 const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
@@ -28,6 +46,44 @@ const installExtensions = async () => {
   ).catch(console.log);
 };
 
+const setWindowPosition = () => {
+  const windowPosition = store.get('windowDefaultPosition');
+  if (mainWindow) {
+    switch (windowPosition) {
+      case 'top-left':
+        mainWindow.setPosition(0, 0);
+        break;
+      case 'top':
+        mainWindow.setPosition((screen.getPrimaryDisplay().workAreaSize.width - mainWindow.getBounds().width) / 2, 0);
+        break;
+      case 'top-right':
+        mainWindow.setPosition(screen.getPrimaryDisplay().workAreaSize.width - mainWindow.getBounds().width, 0);
+        break;
+      case 'mid-left':
+        mainWindow.setPosition(0, (screen.getPrimaryDisplay().workAreaSize.height - mainWindow.getBounds().height) / 2);
+        break;
+      case 'mid':
+        mainWindow.center();
+        break;
+      case 'mid-right':
+        mainWindow.setPosition(screen.getPrimaryDisplay().workAreaSize.width - mainWindow.getBounds().width, (screen.getPrimaryDisplay().workAreaSize.height - mainWindow.getBounds().height) / 2);
+        break;
+      case 'bottom-left':
+        mainWindow.setPosition(0, screen.getPrimaryDisplay().workAreaSize.height - mainWindow.getBounds().height);
+        break;
+      case 'bottom':
+        mainWindow.setPosition((screen.getPrimaryDisplay().workAreaSize.width - mainWindow.getBounds().width) / 2, screen.getPrimaryDisplay().workAreaSize.height - mainWindow.getBounds().height);
+        break;
+      case 'bottom-right':
+        mainWindow.setPosition(screen.getPrimaryDisplay().workAreaSize.width - mainWindow.getBounds().width, screen.getPrimaryDisplay().workAreaSize.height - mainWindow.getBounds().height);
+        break;
+      default:
+        mainWindow.center();
+        break;
+    }
+  }
+};
+
 const createWindow = async () => {
   if (isDebug) await installExtensions();
 
@@ -39,7 +95,7 @@ const createWindow = async () => {
   const persistSession = session.fromPartition('persist:contentview');
 
   mainWindow = new BrowserWindow({
-    show: true,
+    show: false,
     width: 480,
     height: 280,
     icon: getAssetPath('icon.png'),
@@ -64,8 +120,23 @@ const createWindow = async () => {
 
   mainWindow.once('ready-to-show', () => {
     if (!mainWindow) throw new Error('"mainWindow" is not defined');
-    mainWindow.show();
-    openUrlFromProtocol(process.argv[1].replace(/^pipplayer\:\/\//, ''));
+
+    //Config window position
+    setWindowPosition();
+
+    //Config minimized on start
+    const minimizedOnStart = store.get('minimizedOnStart');
+
+    if (minimizedOnStart) {
+      mainWindow.minimize();
+    } else {
+      mainWindow.show();
+    }
+ 
+    const arg = process.argv.length > 1 ? process.argv[1] : null;
+    if (arg && isUrl(arg)) {
+      openUrlFromProtocol(arg.replace(/^pipplayer:\/\//, ''));
+    }
   });
 
   mainWindow.loadURL(resolveHtmlPath('main.html'));
@@ -97,7 +168,7 @@ const checkWindowPosition = () => {
 const openUrlFromProtocol = (url?: string) => {
   if (!url || !isUrl(url)) return;
   mainWindow?.webContents.send('window-load-url', decodeURIComponent(url));
-}
+};
 
 const isUrl = (url: string) => {
   try {
@@ -106,7 +177,7 @@ const isUrl = (url: string) => {
   } catch (_) {
     return false;
   }
-}
+};
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -117,21 +188,25 @@ if (!gotTheLock) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     }
-    openUrlFromProtocol(commandLine.pop()?.replace(/^pipplayer\:\/\//, ''));
+
+    const urlArg = commandLine.length > 1 ? commandLine.pop() : null;
+    if (urlArg && isUrl(urlArg)) {
+      openUrlFromProtocol(urlArg.replace(/^pipplayer:\/\//, ''));
+    }
   });
 
   app.whenReady().then(() => {
-    let foundUrl: string = '';
-
     if (mainWindow === null) {
       createWindow();
     }
   }).catch(console.log);
 }
 
-//MacOS
+// MacOS
 app.on('open-url', (event, url) => {
-  openUrlFromProtocol(url);  
+  if (url && isUrl(url)) {
+    openUrlFromProtocol(url);
+  }
 });
 
 app.on('window-all-closed', () => {
@@ -143,5 +218,13 @@ ipcMain.on('window-minimize', () => {
   mainWindow?.minimize();
 });
 ipcMain.on('window-close', () => windowStore.closeAll());
+ipcMain.on('config-set-windowDefaultPosition', (event, pos: any) => {
+  store.set('windowDefaultPosition', pos);
+  setWindowPosition();
+});
+
+ipcMain.handle('config-get-autoplayMedia', () => {
+  return store.get('autoplayMedia');
+});
 
 app.commandLine.appendSwitch('url');

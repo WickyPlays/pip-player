@@ -11,6 +11,10 @@ export default function SettingsAbout() {
     window.electron.ipcRenderer.send("open-email", "baottworkspace@gmail.com");
   }
 
+  function handleLicense() {
+    window.electron.ipcRenderer.send("open-link", "https://github.com/WickyPlays/pip-player/blob/main/LICENSE")
+  }
+
   return (
     <div className='settings-about'>
       <h1>About</h1>
@@ -18,10 +22,10 @@ export default function SettingsAbout() {
         <div className='meta'>
           <p>PIP-Player</p>
           <p>Version 1.2.0</p>
-          <p>Author: Tu Thien Bao</p>
+          <p>Author: Tu Thien Bao (WickyPlays)</p>
         </div>
         <div>
-          <button>View licenses</button>
+          <button onClick={handleLicense}>View licenses</button>
         </div>
         <div className='contact'>
           <p>Any questions?</p>
