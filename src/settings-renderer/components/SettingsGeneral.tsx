@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './SettingsGeneral.scss';
 
 export default function SettingsGeneral() {
@@ -11,6 +11,27 @@ export default function SettingsGeneral() {
     'mid-left', 'mid', 'mid-right',
     'bottom-left', 'bottom', 'bottom-right'
   ];
+
+  const handleWindowDefaultPosition = (pos: string) => {
+    if (!pos) return;
+    setPosition(pos);
+    console.log(pos)
+    window.electron.ipcRenderer.send('config-set-windowDefaultPosition', pos);
+  }
+
+  const handleAutoplay = (value: boolean) => {
+    setAutoplay(value);
+    window.electron.ipcRenderer.send('config-set-autoplayMedia', value);
+  };
+
+  const handleWindowMinimized = (value: boolean) => {
+    setMinimized(value);
+    window.electron.ipcRenderer.send('config-set-minimizedOnStart', value);
+  };
+
+  window.electron.ipcRenderer.on('config-get-windowDefaultPosition', (pos: string) => setPosition(pos));
+  window.electron.ipcRenderer.on('config-get-autoplayMedia', (value: boolean) => setAutoplay(value));
+  window.electron.ipcRenderer.on('config-get-minimizedOnStart', (value: boolean) => setMinimized(value));
 
   return (
     <div className='settings-general'>
@@ -25,7 +46,7 @@ export default function SettingsGeneral() {
               <div
                 key={index}
                 className={`grid-item ${pos === position ? 'active' : ''}`}
-                onClick={() => setPosition(pos)}
+                onClick={() => handleWindowDefaultPosition(pos)}
               ></div>
             ))}
           </div>
@@ -35,7 +56,7 @@ export default function SettingsGeneral() {
         <div className='setting-item'>
           <label>Autoplay Media</label>
           <label className="switch">
-            <input type="checkbox" checked={autoplay} onChange={() => setAutoplay(!autoplay)} />
+            <input type="checkbox" checked={autoplay} onChange={() => handleAutoplay(!autoplay)} />
             <span className="slider round"></span>
           </label>
         </div>
@@ -44,7 +65,7 @@ export default function SettingsGeneral() {
         <div className='setting-item'>
           <label>Minimized on Start</label>
           <label className="switch">
-            <input type="checkbox" checked={minimized} onChange={() => setMinimized(!minimized)} />
+            <input type="checkbox" checked={minimized} onChange={() => handleWindowMinimized(!minimized)} />
             <span className="slider round"></span>
           </label>
         </div>

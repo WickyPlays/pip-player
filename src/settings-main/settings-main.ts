@@ -2,6 +2,9 @@ import path from 'path';
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { resolveHtmlPath } from '../main/util';
 import { windowStore } from '../window_store';
+import Store from 'electron-store';
+
+const store = new Store();
 
 let settingsWindow: BrowserWindow | null = null;
 
@@ -63,7 +66,7 @@ export const createWindow = async () => {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
-        devTools: false
+        devTools: true
     },
   });
 
@@ -77,6 +80,20 @@ export const createWindow = async () => {
 
     settingsWindow.show();
   });
+
+  settingsWindow.on('show', () => {
+    if (!settingsWindow) {
+      throw new Error('"settingsWindow" is not defined');
+    }
+
+    const windowDefaultPosition = store.get('windowDefaultPosition');
+    const autoplayMedia = store.get('autoplayMedia');
+    const minimizedOnStart = store.get('minimizedOnStart');
+
+    settingsWindow.webContents.send('config-get-windowDefaultPosition', windowDefaultPosition);
+    settingsWindow.webContents.send('config-get-autoplayMedia', autoplayMedia);
+    settingsWindow.webContents.send('config-get-minimizedOnStart', minimizedOnStart);
+  })
 
   settingsWindow.on('closed', () => {
     windowStore.delete('settings-window');

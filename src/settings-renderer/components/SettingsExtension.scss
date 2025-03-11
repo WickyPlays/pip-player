@@ -18,12 +18,18 @@
     width: 45px;
     height: 45px;
 
-    &:hover {
+    &:not(&-disabled):hover {
       background-color: #797979;
     }
 
     &:active {
       background-color: #ff0000;
+    }
+
+    &-disabled {
+      cursor: not-allowed;
+      background-color: #414141 !important;
+      color: #909090;
     }
   }
 

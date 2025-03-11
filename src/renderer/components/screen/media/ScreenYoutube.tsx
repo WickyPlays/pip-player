@@ -1,6 +1,6 @@
 import ReactPlayer from "react-player";
 
-export default function ScreenYoutube({url}: {url: string}) {
+export default function ScreenYoutube({url, autoplay}: {url: string, autoplay: boolean}) {
 
   const styling = {
     width: '100%',
@@ -11,7 +11,7 @@ export default function ScreenYoutube({url}: {url: string}) {
 
   return (
     <div style={styling as any}>
-      <ReactPlayer width='100%' height='100%' url={url} controls />
+      <ReactPlayer width='100%' height='100%' url={url} controls playsinline={autoplay} />
     </div>
   )
 }
