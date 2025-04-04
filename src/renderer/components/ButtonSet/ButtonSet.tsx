@@ -18,6 +18,7 @@ export default function ButtonSet() {
 	}
 
 	function toggleSettings() {
+		window.electron.ipcRenderer.send('window-minimize');
 		window.electron.ipcRenderer.openSettingsWindow();
 	}
 

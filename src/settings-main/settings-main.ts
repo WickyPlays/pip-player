@@ -97,6 +97,11 @@ export const createWindow = async () => {
 
   settingsWindow.on('closed', () => {
     windowStore.delete('settings-window');
+    let mainWindow = windowStore.get('main-window');
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
     settingsWindow = null;
   });
 

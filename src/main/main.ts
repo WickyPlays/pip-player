@@ -1,5 +1,5 @@
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, session, screen, protocol } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session, screen, protocol, dialog } from 'electron';
 import { resolveHtmlPath } from './util';
 import { createWindow as createSettingsWindow } from '../settings-main/settings-main';
 import { windowStore } from '../window_store';
@@ -7,6 +7,7 @@ import { ElectronBlocker } from '@ghostery/adblocker-electron';
 import Store from 'electron-store';
 
 let mainWindow: BrowserWindow | null = null;
+let pendingUrl: string | null = null;
 
 const schema = {
   windowDefaultPosition: {
@@ -39,7 +40,6 @@ const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
   const extensions = ['REACT_DEVELOPER_TOOLS'];
-
   return installer.default(
     extensions.map((name) => installer[name]),
     forceDownload
@@ -93,6 +93,16 @@ const createWindow = async () => {
 
   const getAssetPath = (...paths: string[]): string => path.join(RESOURCES_PATH, ...paths);
   const persistSession = session.fromPartition('persist:contentview');
+  
+  persistSession.webRequest.onHeadersReceived((details, callback) => {
+    const response = {
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Referrer-Policy': ['no-referrer-when-downgrade']
+      }
+    };
+    callback(response);
+  });
 
   mainWindow = new BrowserWindow({
     show: false,
@@ -120,27 +130,20 @@ const createWindow = async () => {
 
   mainWindow.once('ready-to-show', () => {
     if (!mainWindow) throw new Error('"mainWindow" is not defined');
-
-    //Config window position
     setWindowPosition();
-
-    //Config minimized on start
     const minimizedOnStart = store.get('minimizedOnStart');
-
     if (minimizedOnStart) {
       mainWindow.minimize();
     } else {
       mainWindow.show();
     }
- 
-    const arg = process.argv.length > 1 ? process.argv[1] : null;
-    if (arg && isUrl(arg)) {
-      openUrlFromProtocol(arg.replace(/^pipplayer:\/\//, ''));
+    if (pendingUrl) {
+      openUrlFromProtocol(pendingUrl);
+      pendingUrl = null;
     }
   });
 
   mainWindow.loadURL(resolveHtmlPath('main.html'));
-
   mainWindow.on('closed', () => (mainWindow = null));
   mainWindow.on('moved', checkWindowPosition);
   mainWindow.on('resized', checkWindowPosition);
@@ -157,7 +160,6 @@ const checkWindowPosition = () => {
   if (!mainWindow) return;
   const { width } = screen.getPrimaryDisplay().workAreaSize;
   const bounds = mainWindow.getBounds();
-
   if (bounds.x <= width * 0.35) {
     mainWindow.webContents.send('window-position', 'left');
   } else {
@@ -167,7 +169,11 @@ const checkWindowPosition = () => {
 
 const openUrlFromProtocol = (url?: string) => {
   if (!url || !isUrl(url)) return;
-  mainWindow?.webContents.send('window-load-url', decodeURIComponent(url));
+  if (mainWindow?.webContents) {
+    mainWindow.webContents.send('window-load-url', decodeURIComponent(url));
+  } else {
+    pendingUrl = url;
+  }
 };
 
 const isUrl = (url: string) => {
@@ -190,8 +196,11 @@ if (!gotTheLock) {
     }
 
     const urlArg = commandLine.length > 1 ? commandLine.pop() : null;
-    if (urlArg && isUrl(urlArg)) {
-      openUrlFromProtocol(urlArg.replace(/^pipplayer:\/\//, ''));
+    const extractedLink = urlArg?.replace(/^pipplayer:\/\//, '');
+    const decodedLink = decodeURIComponent(extractedLink || '');
+    
+    if (decodedLink && isUrl(decodedLink)) {
+      openUrlFromProtocol(decodedLink);
     }
   });
 
@@ -202,7 +211,6 @@ if (!gotTheLock) {
   }).catch(console.log);
 }
 
-// MacOS
 app.on('open-url', (event, url) => {
   if (url && isUrl(url)) {
     openUrlFromProtocol(url);
