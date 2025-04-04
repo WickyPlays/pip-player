@@ -1,4 +1,4 @@
-Welcome to PiP Player 1.2.0
+Welcome to PiP Player 1.2.0a
 
 > [!NOTE]
 > A word of warning: this app is HEAVILY under development as you certainly might see bugs here and there. Don't be afraid to submit issues you found via [Issues](https://github.com/WickyPlays/pip-player/issues)
@@ -7,7 +7,7 @@ Welcome to PiP Player 1.2.0
 
 Hello, and welcome to my first Electron project. This project allows you to run any browser links especially videos like from Youtube to a custom PiP app for Windows (and Mac, Linux if I finish the setup). which helps you to watch stuffs with the link (eg: YouTube) while working on the same monitor at the same time. Convenient, right?
 
-It helps solve the problem that most browsers' PiP nowadays are lacking: less controls (Chrome, Edge, etc.), no option for shortcuts, and more.
+It helps solve the problem that most browsers' PiP nowadays are lacking: less controls (Chrome, Edge, etc.), performance issue PiP (Firefox, etc.) missing seek bar, no option for shortcuts, subtitles, and more.
 
 ## How to use
 
@@ -19,11 +19,11 @@ It helps solve the problem that most browsers' PiP nowadays are lacking: less co
 
 * [X]  An AdBlocker (thanks to EasyList filter rules).
 * [ ]  [SponsorBlock](https://github.com/ajayyy/SponsorBlock)
-* [ ]  Custom settings (default resolution, etc.)
+* [X]  Custom settings (default resolution, etc.)
 * [ ]  More supports for other media platforms (Vimeo, Dailymotion, etc.).
 * [ ]  Local video file support.
 * [ ]  Mac & Linux support (since the build requires a Mac and Linux PC).
-* [x]  Browser extension support w/ protocol (pipplayer://)
+* [X]  Browser extension support w/ protocol (pipplayer://)
 * [ ]  Custom playback controls.
 
 ## Install & Build

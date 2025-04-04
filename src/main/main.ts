@@ -93,6 +93,16 @@ const createWindow = async () => {
 
   const getAssetPath = (...paths: string[]): string => path.join(RESOURCES_PATH, ...paths);
   const persistSession = session.fromPartition('persist:contentview');
+  
+  persistSession.webRequest.onHeadersReceived((details, callback) => {
+    const response = {
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Referrer-Policy': ['no-referrer-when-downgrade']
+      }
+    };
+    callback(response);
+  });
 
   mainWindow = new BrowserWindow({
     show: false,
