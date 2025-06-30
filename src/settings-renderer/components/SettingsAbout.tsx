@@ -21,7 +21,7 @@ export default function SettingsAbout() {
       <div className='content'>
         <div className='meta'>
           <p>PIP-Player</p>
-          <p>Version 1.2.0</p>
+          <p>Version 1.2.1</p>
           <p>Author: Tu Thien Bao (WickyPlays)</p>
         </div>
         <div>

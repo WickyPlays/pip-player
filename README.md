@@ -1,4 +1,4 @@
-Welcome to PiP Player 1.2.0
+Welcome to PiP Player 1.2.1
 
 > [!NOTE]
 > A word of warning: this app is HEAVILY under development as you certainly might see bugs here and there. Don't be afraid to submit issues you found via [Issues](https://github.com/WickyPlays/pip-player/issues)
@@ -60,8 +60,9 @@ In fact, a single Electron app can cost a lot of storage (MB) just for simple st
 
 ## Contributing
 
-Everyone is allowed to contribute to the code via pull request (PR).
+Due to its open-source nature, everyone is allowed to contribute to the code via pull request (PR).
 
 ## A Thank You To The Following
 
-MIT © [Electron React Boilerplate](https://github.com/electron-react-boilerplate)
++ MIT © [Electron React Boilerplate](https://github.com/electron-react-boilerplate)
++ [react-player](https://github.com/cookpete/react-player)

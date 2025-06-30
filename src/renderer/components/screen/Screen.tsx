@@ -8,6 +8,7 @@ import ScreenFacebook from './media/ScreenFacebook';
 import ScreenEmpty from './media/ScreenEmpty';
 import { getLinkType, LinkType } from '../../utils/EmbedUtil';
 import { useEffect, useState } from 'react';
+import ScreenTwitch from './media/ScreenTwitch';
 
 export default function Screen() {
   const [link] = useAtom(linkAtom);
@@ -17,7 +18,6 @@ export default function Screen() {
 
   useEffect(() => {
     const linkType = getLinkType(link)
-    console.log(linkType)
     setLinkType(linkType);
   }, [link])
 
@@ -39,7 +39,10 @@ export default function Screen() {
             <ScreenDailymotion url={link} autoplay={autoplayMedia} />
           ) : linkType === LinkType.FACEBOOK ? (
             <ScreenFacebook url={link} autoplay={autoplayMedia} />
-          ) : (
+          ) : linkType === LinkType.TWITCH ? (
+            <ScreenTwitch url={link} autoplay={autoplayMedia} />
+          )          
+          : (
             <webview
               id='video'
               src={link}

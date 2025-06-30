@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import ReactPlayer from "react-player";
 
 export default function ScreenYoutube({url, autoplay}: {url: string, autoplay: boolean}) {
@@ -9,9 +10,13 @@ export default function ScreenYoutube({url, autoplay}: {url: string, autoplay: b
     boxSizing: 'border-box'
   }
 
+  useEffect(() => {
+    console.log(url)
+  }, [])
+
   return (
     <div style={styling as any}>
-      <ReactPlayer width='100%' height='100%' url={url} controls playsinline={autoplay} />
+      <ReactPlayer width='100%' height='100%' src={url} controls playing={autoplay} />
     </div>
   )
 }

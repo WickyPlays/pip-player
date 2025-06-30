@@ -2,10 +2,11 @@ export const LinkType = {
   YOUTUBE: 'youtube',
   DAILYMOTION: 'dailymotion',
   FACEBOOK: 'facebook',
+  TWITCH: 'twitch',
   OTHER: 'other'
 };
 
-export function convertEmbedLink(url) {
+export function convertEmbedLink(url: string) {
   console.log("Detecting video link type...");
 
   // YouTube
@@ -26,7 +27,8 @@ export function convertEmbedLink(url) {
       return `https://www.dailymotion.com/embed/video/${match[4]}`;
     }
   }
-  //Facebook
+
+  // Facebook
   const facebookRegex = /^(https?:\/\/)?(www\.)?facebook\.com\/.+$/;
   if (facebookRegex.test(url)) {
     const match = url.match(facebookRegex);
@@ -34,11 +36,25 @@ export function convertEmbedLink(url) {
       return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}`;
     }
   }
+
+  // Twitch
+  const twitchRegex = /^(https?:\/\/)?(www\.)?twitch\.tv\/([a-zA-Z0-9_]+)(\/clip\/([a-zA-Z0-9_-]+))?/;
+  if (twitchRegex.test(url)) {
+    const match = url.match(twitchRegex);
+    if (match) {
+      // Handle Twitch clips
+      if (match[4] && match[5]) {
+        return `https://clips.twitch.tv/embed?clip=${match[5]}&parent=${window.location.hostname}`;
+      }
+      // Handle regular Twitch channels
+      return `https://player.twitch.tv/?channel=${match[3]}&parent=${window.location.hostname}`;
+    }
+  }
   
   return url;
 }
 
-export function getLinkType(url) {
+export function getLinkType(url: string) {
   const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
   if (youtubeRegex.test(url)) return LinkType.YOUTUBE;
 
@@ -47,6 +63,9 @@ export function getLinkType(url) {
 
   const facebookRegex = /^(https?:\/\/)?(www\.)?facebook\.com\/.+$/;
   if (facebookRegex.test(url)) return LinkType.FACEBOOK;
+
+  const twitchRegex = /^(https?:\/\/)?(www\.)?twitch\.tv\/.+$/;
+  if (twitchRegex.test(url)) return LinkType.TWITCH;
   
   return LinkType.OTHER;
 }
