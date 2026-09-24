@@ -9,7 +9,10 @@ jobs:
   release:
     permissions: write-all
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout
@@ -32,40 +35,77 @@ jobs:
         run: |
           $version = "${env:GITHUB_REF_NAME}" -replace '^v', ''
 
-          $player = "release\build\PIP-Player $version.exe"
-          $setup = "release\build\PIP-Player-Setup-$version.exe"
+          if ($IsWindows) {
+            $player = "release\build\PIP-Player $version.exe"
+            $setup = "release\build\PIP-Player-Setup-$version.exe"
 
-          Write-Host "Version: $version"
-          Write-Host "Player:  $player"
-          Write-Host "Setup:   $setup"
+            Write-Host "Version: $version"
+            Write-Host "Player:  $player"
+            Write-Host "Setup:   $setup"
 
-          if (-not (Test-Path -LiteralPath $player)) {
-            throw "Missing release file: $player"
+            if (-not (Test-Path -LiteralPath $player)) {
+              throw "Missing release file: $player"
+            }
+
+            if (-not (Test-Path -LiteralPath $setup)) {
+              throw "Missing release file: $setup"
+            }
+
+            if ((Get-Item -LiteralPath $player).Length -eq 0) {
+              throw "Release file is empty: $player"
+            }
+
+            if ((Get-Item -LiteralPath $setup).Length -eq 0) {
+              throw "Release file is empty: $setup"
+            }
+
+            "VERSION=$version" >> $env:GITHUB_ENV
+            "PLAYER=$player" >> $env:GITHUB_ENV
+            "SETUP=$setup" >> $env:GITHUB_ENV
+          } else {
+            $appimage = "release/build/PIP-Player-$version.AppImage"
+            $deb = "release/build/pip-player_${version}_amd64.deb"
+
+            Write-Host "Version: $version"
+            Write-Host "AppImage: $appimage"
+            Write-Host "Deb: $deb"
+
+            if (-not (Test-Path -LiteralPath $appimage)) {
+              throw "Missing release file: $appimage"
+            }
+
+            if (-not (Test-Path -LiteralPath $deb)) {
+              throw "Missing release file: $deb"
+            }
+
+            if ((Get-Item -LiteralPath $appimage).Length -eq 0) {
+              throw "Release file is empty: $appimage"
+            }
+
+            if ((Get-Item -LiteralPath $deb).Length -eq 0) {
+              throw "Release file is empty: $deb"
+            }
+
+            "VERSION=$version" >> $env:GITHUB_ENV
+            "APPIMAGE=$appimage" >> $env:GITHUB_ENV
+            "DEB=$deb" >> $env:GITHUB_ENV
           }
-
-          if (-not (Test-Path -LiteralPath $setup)) {
-            throw "Missing release file: $setup"
-          }
-
-          if ((Get-Item -LiteralPath $player).Length -eq 0) {
-            throw "Release file is empty: $player"
-          }
-
-          if ((Get-Item -LiteralPath $setup).Length -eq 0) {
-            throw "Release file is empty: $setup"
-          }
-
-          "VERSION=$version" >> $env:GITHUB_ENV
-          "PLAYER=$player" >> $env:GITHUB_ENV
-          "SETUP=$setup" >> $env:GITHUB_ENV
 
       - name: Upload to asset release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
-          gh release create "${env:GITHUB_REF_NAME}" `
-            "${env:PLAYER}" `
-            "${env:SETUP}" `
-            --generate-notes `
-            --title "${env:GITHUB_REF_NAME}"
+          if ($IsWindows) {
+            gh release create "${env:GITHUB_REF_NAME}" `
+              "${env:PLAYER}" `
+              "${env:SETUP}" `
+              --generate-notes `
+              --title "${env:GITHUB_REF_NAME}"
+          } else {
+            gh release create "${env:GITHUB_REF_NAME}" `
+              "${env:APPIMAGE}" `
+              "${env:DEB}" `
+              --generate-notes `
+              --title "${env:GITHUB_REF_NAME}"
+          }
