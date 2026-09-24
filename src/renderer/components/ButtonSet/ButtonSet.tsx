@@ -41,6 +41,20 @@ export default function ButtonSet() {
 		}
 	}
 
+	//TODO: We are wondering if we can HIDE it instead
+	const canRefresh = () => {
+		const linkType = getLinkType(link);
+		
+		// If it's a ReactPlayer component and we're in focus mode, always can refresh
+		if (isFocus && (linkType === LinkType.YOUTUBE || linkType === LinkType.DAILYMOTION || 
+		    linkType === LinkType.FACEBOOK || linkType === LinkType.TWITCH)) {
+			return true;
+		}
+		
+		// Otherwise, reload the webview only if it's loaded
+		return webviewLoaded && webviewRef !== null;
+	}
+
 	return (
 		<div className='button-set'>
 			<div className='button-set-top'>
@@ -72,6 +86,7 @@ export default function ButtonSet() {
 				<Button
 					className='btn-refresh'
 					onClick={refreshContent}
+					disabled={!canRefresh()}
 				>
 					<IoRefreshOutline />
 				</Button>
