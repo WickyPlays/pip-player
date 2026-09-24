@@ -1,0 +1,71 @@
+name: Package and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    permissions: write-all
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package
+        run: npm run package
+
+      - name: Verify release files
+        shell: pwsh
+        run: |
+          $version = "${env:GITHUB_REF_NAME}" -replace '^v', ''
+
+          $player = "release\build\PIP-Player $version.exe"
+          $setup = "release\build\PIP-Player-Setup-$version.exe"
+
+          Write-Host "Version: $version"
+          Write-Host "Player:  $player"
+          Write-Host "Setup:   $setup"
+
+          if (-not (Test-Path -LiteralPath $player)) {
+            throw "Missing release file: $player"
+          }
+
+          if (-not (Test-Path -LiteralPath $setup)) {
+            throw "Missing release file: $setup"
+          }
+
+          if ((Get-Item -LiteralPath $player).Length -eq 0) {
+            throw "Release file is empty: $player"
+          }
+
+          if ((Get-Item -LiteralPath $setup).Length -eq 0) {
+            throw "Release file is empty: $setup"
+          }
+
+          "VERSION=$version" >> $env:GITHUB_ENV
+          "PLAYER=$player" >> $env:GITHUB_ENV
+          "SETUP=$setup" >> $env:GITHUB_ENV
+
+      - name: Upload to asset release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          gh release create "${env:GITHUB_REF_NAME}" `
+            "${env:PLAYER}" `
+            "${env:SETUP}" `
+            --generate-notes `
+            --title "${env:GITHUB_REF_NAME}"
