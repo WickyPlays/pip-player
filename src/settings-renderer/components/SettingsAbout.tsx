@@ -1,7 +1,13 @@
 import { IoLogoGithub } from 'react-icons/io5'
+import { useState, useEffect } from 'react'
 import './SettingsAbout.scss'
 
 export default function SettingsAbout() {
+  const [version, setVersion] = useState('Loading...')
+
+  useEffect(() => {
+    setVersion(window.electron.getVersion())
+  }, [])
 
   function handleBtnSource() {
     window.electron.ipcRenderer.send("open-link", "https://github.com/WickyPlays/pip-player");
@@ -21,7 +27,7 @@ export default function SettingsAbout() {
       <div className='content'>
         <div className='meta'>
           <p>PIP-Player</p>
-          <p>Version 1.2.3</p>
+          <p>Version {version}</p>
           <p>Author: Tu Thien Bao (WickyPlays)</p>
         </div>
         <div>

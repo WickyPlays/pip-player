@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import packageJson from '../../package.json';
 
 const electronHandler = {
   ipcRenderer: {
@@ -30,6 +31,7 @@ const electronHandler = {
       ipcRenderer.send('open-settings-window');
     },
   },
+  getVersion: () => packageJson.version,
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);
