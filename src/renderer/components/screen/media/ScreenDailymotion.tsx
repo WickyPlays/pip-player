@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { convertEmbedLink } from "../../../utils/EmbedUtil";
 
-export default function ScreenDailymotion({url, autoplay}: {url: string, autoplay: boolean}) {
+export default function ScreenDailymotion({url, autoplay, key}: {url: string, autoplay: boolean, key?: number}) {
 
   const styling = {
     width: '100%',
@@ -17,6 +17,7 @@ export default function ScreenDailymotion({url, autoplay}: {url: string, autopla
   return (
     <div style={styling as any}>
       <iframe
+        key={key}
         src={convertEmbedLink(url) + (autoplay ? '?autoplay=1' : '')}
         allowFullScreen
         allow="autoplay; fullscreen; picture-in-picture"

@@ -5,9 +5,11 @@ import { convertEmbedLink } from '../../../utils/EmbedUtil';
 export default function ScreenTwitch({
   url,
   autoplay,
+  key,
 }: {
   url: string;
   autoplay: boolean;
+  key?: number;
 }) {
   const styling = {
     width: '100%',
@@ -23,6 +25,7 @@ export default function ScreenTwitch({
   return (
     <div style={styling as any}>
       <iframe
+        key={key}
         src={convertEmbedLink(url) + (autoplay ? '?autoplay=1' : '')}
         allowFullScreen
         allow="autoplay"

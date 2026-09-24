@@ -6,6 +6,7 @@
   width: 25px;
   height: 100%;
   -webkit-user-select: none;
+  user-select: none;
   background-color: #242424;
 
   * {
@@ -45,7 +46,8 @@
   .btn-settings,
   .btn-minimize,
   .btn-close,
-  .btn-focus {
+  .btn-focus,
+  .btn-refresh {
     background-color: transparent;
     color: #FFF;
     margin: 0;

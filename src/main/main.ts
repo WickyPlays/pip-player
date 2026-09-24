@@ -118,6 +118,7 @@ const createWindow = async () => {
       webviewTag: true,
       session: persistSession,
       devTools: true,
+      nodeIntegrationInSubFrames: true,
     },
     fullscreenable: false,
     transparent: true,
@@ -234,7 +235,7 @@ ipcMain.on('config-set-windowDefaultPosition', (event, pos: any) => {
 });
 
 ipcMain.handle('config-get-autoplayMedia', () => {
-  return store.get('autoplayMedia');
+  return store.autoplayMedia;
 });
 
 app.commandLine.appendSwitch('url');
