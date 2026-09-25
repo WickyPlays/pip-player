@@ -54,7 +54,21 @@ Building app using the following command:
 npm run package
 ```
 
-Enjoy your code!
+### Testing GitHub Actions
+
+We have the convenient `act` for this use case too:
+
+```bash
+npm install -g act
+
+# Test the release workflow for all platforms (requires Docker)
+act push -e .github/act/release.json -P ubuntu-latest=-self-hosted -P windows-latest=-self-hosted
+
+# Or test only a specific platform
+act push -e .github/act/release.json -P windows-latest=-self-hosted
+```
+
+The project includes test event files in `.github/act/`
 
 ## A notice to Electron
 
