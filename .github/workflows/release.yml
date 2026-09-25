@@ -12,10 +12,10 @@ on:
         type: string
 
 jobs:
-  release:
-    permissions: write-all
-    name: Create Release
+  package:
+    name: Package (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -41,122 +41,156 @@ jobs:
         run: |
           if ("${{ github.event_name }}" -eq "workflow_dispatch") {
             $tag = "${{ github.event.inputs.tag }}"
-            $version = $tag -replace '^v', ''
-            Write-Host "Using workflow_dispatch tag: $tag"
-            Write-Host "Version: $version"
-            "TAG=$tag" >> $env:GITHUB_ENV
-            "VERSION=$version" >> $env:GITHUB_ENV
-            "IS_DISPATCH=true" >> $env:GITHUB_ENV
-          } else {
+          } elseif ("${env:GITHUB_REF_NAME}" -match "^v") {
             $tag = "${env:GITHUB_REF_NAME}"
-            $version = $tag -replace '^v', ''
-            Write-Host "Using push tag: $tag"
-            Write-Host "Version: $version"
-            "TAG=$tag" >> $env:GITHUB_ENV
-            "VERSION=$version" >> $env:GITHUB_ENV
-            "IS_DISPATCH=false" >> $env:GITHUB_ENV
+          } else {
+            # Fallback to package.json version for local testing
+            $packageJson = Get-Content package.json | ConvertFrom-Json
+            $tag = "v" + $packageJson.version
+            Write-Host "Using package.json version for local testing: $tag"
           }
 
-      - name: Update package.json version for workflow_dispatch
-        if: env.IS_DISPATCH == 'true'
+          $version = $tag -replace '^v', ''
+
+          Write-Host "Tag: $tag"
+          Write-Host "Version: $version"
+
+          "TAG=$tag" >> $env:GITHUB_ENV
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Validate package.json version matches tag
         shell: pwsh
         run: |
           $packageJson = Get-Content package.json | ConvertFrom-Json
-          $packageJson.version = "${env:VERSION}"
-          $packageJson | ConvertTo-Json -Depth 10 | Set-Content package.json
-          Write-Host "Updated package.json version to ${env:VERSION}"
+          $packageVersion = $packageJson.version
 
-      - name: Commit and tag version for workflow_dispatch
-        if: env.IS_DISPATCH == 'true'
-        shell: pwsh
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json
-          git commit -m "Bump version to ${env:VERSION}"
-          git push
-          git tag "${env:TAG}"
-          git push origin "${env:TAG}"
+          # Skip validation if tag starts with 'v' (it's a real tag)
+          if ("${env:TAG}" -match "^v\d") {
+            if ($packageVersion -ne "${env:VERSION}") {
+              throw "package.json version ($packageVersion) does not match tag version (${env:VERSION})"
+            }
+            Write-Host "Version validation passed: $packageVersion"
+          } else {
+            Write-Host "Skipping validation for local testing with package.json version: $packageVersion"
+          }
 
       - name: Package
         run: npm run package
 
-      - name: Verify release files
+      - name: Verify Windows release files
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $version = "${env:VERSION}"
 
-          if ($IsWindows) {
-            $player = "release\build\PIP-Player $version.exe"
-            $setup = "release\build\PIP-Player-Setup-$version.exe"
+          $player = "release\build\PIP-Player $version.exe"
+          $setup = "release\build\PIP-Player-Setup-$version.exe"
 
-            Write-Host "Version: $version"
-            Write-Host "Player:  $player"
-            Write-Host "Setup:   $setup"
-
-            if (-not (Test-Path -LiteralPath $player)) {
-              throw "Missing release file: $player"
-            }
-
-            if (-not (Test-Path -LiteralPath $setup)) {
-              throw "Missing release file: $setup"
-            }
-
-            if ((Get-Item -LiteralPath $player).Length -eq 0) {
-              throw "Release file is empty: $player"
-            }
-
-            if ((Get-Item -LiteralPath $setup).Length -eq 0) {
-              throw "Release file is empty: $setup"
-            }
-
-            "VERSION=$version" >> $env:GITHUB_ENV
-            "PLAYER=$player" >> $env:GITHUB_ENV
-            "SETUP=$setup" >> $env:GITHUB_ENV
-          } else {
-            $appimage = "release/build/PIP-Player-$version.AppImage"
-            $deb = "release/build/pip-player_${version}_amd64.deb"
-
-            Write-Host "Version: $version"
-            Write-Host "AppImage: $appimage"
-            Write-Host "Deb: $deb"
-
-            if (-not (Test-Path -LiteralPath $appimage)) {
-              throw "Missing release file: $appimage"
-            }
-
-            if (-not (Test-Path -LiteralPath $deb)) {
-              throw "Missing release file: $deb"
-            }
-
-            if ((Get-Item -LiteralPath $appimage).Length -eq 0) {
-              throw "Release file is empty: $appimage"
-            }
-
-            if ((Get-Item -LiteralPath $deb).Length -eq 0) {
-              throw "Release file is empty: $deb"
-            }
-
-            "VERSION=$version" >> $env:GITHUB_ENV
-            "APPIMAGE=$appimage" >> $env:GITHUB_ENV
-            "DEB=$deb" >> $env:GITHUB_ENV
+          if (-not (Test-Path -LiteralPath $player)) {
+            throw "Missing release file: $player"
           }
 
-      - name: Upload to asset release
-        env:
-          GH_TOKEN: ${{ github.token }}
+          if (-not (Test-Path -LiteralPath $setup)) {
+            throw "Missing release file: $setup"
+          }
+
+          if ((Get-Item -LiteralPath $player).Length -eq 0) {
+            throw "Release file is empty: $player"
+          }
+
+          if ((Get-Item -LiteralPath $setup).Length -eq 0) {
+            throw "Release file is empty: $setup"
+          }
+
+      - name: Verify Linux release files
+        if: runner.os == 'Linux'
         shell: pwsh
         run: |
-          if ($IsWindows) {
-            gh release create "${env:TAG}" `
-              "${env:PLAYER}" `
-              "${env:SETUP}" `
-              --generate-notes `
-              --title "${env:TAG}"
-          } else {
-            gh release create "${env:TAG}" `
-              "${env:APPIMAGE}" `
-              "${env:DEB}" `
-              --generate-notes `
-              --title "${env:TAG}"
+          $version = "${env:VERSION}"
+
+          $appimage = "release/build/PIP-Player-$version.AppImage"
+          $deb = "release/build/pip-player_${version}_amd64.deb"
+
+          if (-not (Test-Path -LiteralPath $appimage)) {
+            throw "Missing release file: $appimage"
           }
+
+          if (-not (Test-Path -LiteralPath $deb)) {
+            throw "Missing release file: $deb"
+          }
+
+          if ((Get-Item -LiteralPath $appimage).Length -eq 0) {
+            throw "Release file is empty: $appimage"
+          }
+
+          if ((Get-Item -LiteralPath $deb).Length -eq 0) {
+            throw "Release file is empty: $deb"
+          }
+
+      - name: Upload Windows artifacts
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: |
+            release/build/PIP-Player ${{ steps.version.outputs.version }}.exe
+            release/build/PIP-Player-Setup-${{ steps.version.outputs.version }}.exe
+
+      - name: Upload Linux artifacts
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: |
+            release/build/PIP-Player-${{ steps.version.outputs.version }}.AppImage
+            release/build/pip-player_${{ steps.version.outputs.version }}_amd64.deb
+
+  release:
+    name: Create Release
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Determine tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          elif [[ "${GITHUB_REF_NAME}" =~ ^v ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            # Fallback to package.json version for local testing
+            TAG="v$(node -p "require('./package.json').version")"
+            echo "Using package.json version for local testing: $TAG"
+          fi
+
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-release
+          path: release
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release
+          path: release
+
+      - name: List release files
+        run: |
+          find release -type f -print
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" \
+            release/* \
+            --generate-notes \
+            --title "$TAG"
