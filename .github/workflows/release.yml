@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,13 +35,56 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Determine version
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $tag = "${{ github.event.inputs.tag }}"
+            $version = $tag -replace '^v', ''
+            Write-Host "Using workflow_dispatch tag: $tag"
+            Write-Host "Version: $version"
+            "TAG=$tag" >> $env:GITHUB_ENV
+            "VERSION=$version" >> $env:GITHUB_ENV
+            "IS_DISPATCH=true" >> $env:GITHUB_ENV
+          } else {
+            $tag = "${env:GITHUB_REF_NAME}"
+            $version = $tag -replace '^v', ''
+            Write-Host "Using push tag: $tag"
+            Write-Host "Version: $version"
+            "TAG=$tag" >> $env:GITHUB_ENV
+            "VERSION=$version" >> $env:GITHUB_ENV
+            "IS_DISPATCH=false" >> $env:GITHUB_ENV
+          }
+
+      - name: Update package.json version for workflow_dispatch
+        if: env.IS_DISPATCH == 'true'
+        shell: pwsh
+        run: |
+          $packageJson = Get-Content package.json | ConvertFrom-Json
+          $packageJson.version = "${env:VERSION}"
+          $packageJson | ConvertTo-Json -Depth 10 | Set-Content package.json
+          Write-Host "Updated package.json version to ${env:VERSION}"
+
+      - name: Commit and tag version for workflow_dispatch
+        if: env.IS_DISPATCH == 'true'
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "Bump version to ${env:VERSION}"
+          git push
+          git tag "${env:TAG}"
+          git push origin "${env:TAG}"
+
       - name: Package
         run: npm run package
 
       - name: Verify release files
         shell: pwsh
         run: |
-          $version = "${env:GITHUB_REF_NAME}" -replace '^v', ''
+          $version = "${env:VERSION}"
 
           if ($IsWindows) {
             $player = "release\build\PIP-Player $version.exe"
@@ -103,15 +148,15 @@ jobs:
         shell: pwsh
         run: |
           if ($IsWindows) {
-            gh release create "${env:GITHUB_REF_NAME}" `
+            gh release create "${env:TAG}" `
               "${env:PLAYER}" `
               "${env:SETUP}" `
               --generate-notes `
-              --title "${env:GITHUB_REF_NAME}"
+              --title "${env:TAG}"
           } else {
-            gh release create "${env:GITHUB_REF_NAME}" `
+            gh release create "${env:TAG}" `
               "${env:APPIMAGE}" `
               "${env:DEB}" `
               --generate-notes `
-              --title "${env:GITHUB_REF_NAME}"
+              --title "${env:TAG}"
           }
