@@ -177,23 +177,23 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-release
-          path: release
+          path: windows
 
       - name: Download Linux artifacts
         uses: actions/download-artifact@v4
         with:
           name: linux-release
-          path: release
+          path: linux
 
       - name: List release files
         run: |
-          find release -type f -print
+          find windows linux -type f -print 2>/dev/null || true
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$TAG" \
-            release/* \
+            windows/* linux/* \
             --generate-notes \
             --title "$TAG"
