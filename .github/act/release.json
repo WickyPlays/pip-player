@@ -1,6 +1,6 @@
 {
   "event_name": "workflow_dispatch",
   "inputs": {
-    "tag": "v1.2.2"
+    "tag": "v1.2.3"
   }
 }
