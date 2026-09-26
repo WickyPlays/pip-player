@@ -3,6 +3,7 @@ import "./App.scss"
 import Screen from "./components/screen/Screen";
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import ButtonSet from "./components/ButtonSet/ButtonSet";
+import UpdateNotification from "./components/UpdateNotification/UpdateNotification";
 
 function AppWindow(): JSX.Element {
 
@@ -28,6 +29,7 @@ function AppWindow(): JSX.Element {
     <div className="app" style={{flexDirection: windowPositionStyle as any}}>
       <ButtonSet />
       <Screen />
+      <UpdateNotification />
     </div>
   )
 }

@@ -1,8 +1,15 @@
 .settings-general {
   padding: 0 20px;
 
-  h1 {
-    font-size: 25px;
+  .settings-header {
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+
+    h1 {
+      font-size: 25px;
+      margin: 0;
+    }
   }
 
   .content {

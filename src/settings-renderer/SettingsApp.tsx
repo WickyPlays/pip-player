@@ -4,6 +4,8 @@ import SettingsMisc from './components/SettingsMisc'
 import './SettingsApp.scss'
 import SettingsExtension from './components/SettingsExtension'
 import SettingsAbout from './components/SettingsAbout'
+import SettingsUpdates from './components/SettingsUpdates'
+import SettingsRecent from './components/SettingsRecent'
 
 export default function SettingsApp() {
 
@@ -21,6 +23,14 @@ export default function SettingsApp() {
     {
       name: "Miscellaneous",
       component: <SettingsMisc />
+    },
+    {
+      name: "Updates",
+      component: <SettingsUpdates />
+    },
+    {
+      name: "Recent",
+      component: <SettingsRecent />
     },
     {
       name: "About",

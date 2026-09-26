@@ -1,0 +1,313 @@
+.settings-updates {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0px 20px;
+  height: 100%;
+  overflow-y: auto;
+
+  .updates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .current-version {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+
+      strong {
+        color: white;
+      }
+    }
+  }
+
+  .updates-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+
+    .update-status-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+
+      svg {
+        font-size: 48px;
+        opacity: 0.5;
+      }
+    }
+
+    .update-status-checking {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: white;
+
+      svg {
+        font-size: 32px;
+
+        &.spinning {
+          animation: spin 1s linear infinite;
+        }
+      }
+    }
+
+    .update-status-available {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 400px;
+
+      .update-info {
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid rgba(76, 175, 80, 0.3);
+        border-radius: 8px;
+        padding: 16px;
+
+        h3 {
+          margin: 0 0 8px 0;
+          font-size: 18px;
+          color: #4CAF50;
+        }
+
+        .release-notes {
+          margin: 8px 0;
+          font-size: 14px;
+          line-height: 1.5;
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        small {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.5);
+        }
+      }
+    }
+
+    .update-status-current {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #4CAF50;
+      font-size: 16px;
+
+      svg {
+        font-size: 24px;
+      }
+    }
+
+    .update-status-downloading {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 400px;
+
+      .download-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        font-size: 14px;
+
+        .progress-text {
+          font-weight: 600;
+          color: #2196F3;
+        }
+      }
+
+      .progress-bar-container {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+
+        .progress-bar {
+          height: 100%;
+          background: linear-gradient(90deg, #2196F3, #03A9F4);
+          transition: width 0.3s ease;
+        }
+      }
+
+      .download-speed {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        text-align: right;
+      }
+    }
+
+    .update-status-downloaded {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 400px;
+
+      .downloaded-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        background: rgba(33, 150, 243, 0.1);
+        border: 1px solid rgba(33, 150, 243, 0.3);
+        border-radius: 8px;
+        padding: 16px;
+
+        svg {
+          font-size: 24px;
+          color: #2196F3;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        div {
+          flex: 1;
+
+          h3 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            color: #2196F3;
+          }
+
+          p {
+            margin: 0;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+          }
+        }
+      }
+    }
+
+    .update-status-error {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 400px;
+
+      .error-info {
+        background: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.3);
+        border-radius: 8px;
+        padding: 16px;
+
+        span {
+          display: block;
+          font-weight: 600;
+          color: #f44336;
+          margin-bottom: 8px;
+        }
+
+        p {
+          margin: 0;
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+  }
+
+  .updates-actions {
+    display: flex;
+    justify-content: center;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      svg {
+        font-size: 16px;
+
+        &.spinning {
+          animation: spin 1s linear infinite;
+        }
+      }
+
+      &.btn-check-updates {
+        background: #2196F3;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #1976D2;
+          transform: translateY(-1px);
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(0);
+        }
+      }
+
+      &.btn-download {
+        background: #4CAF50;
+        color: white;
+        width: 100%;
+        justify-content: center;
+
+        &:hover {
+          background: #45a049;
+        }
+      }
+
+      &.btn-install {
+        background: #2196F3;
+        color: white;
+        width: 100%;
+        justify-content: center;
+
+        &:hover {
+          background: #1976D2;
+        }
+      }
+
+      &.btn-retry {
+        background: #FF9800;
+        color: white;
+        width: 100%;
+        justify-content: center;
+
+        &:hover {
+          background: #F57C00;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

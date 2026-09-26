@@ -23,7 +23,9 @@ export default function SettingsAbout() {
 
   return (
     <div className='settings-about'>
-      <h1>About</h1>
+      <div className='settings-header'>
+        <h1>About</h1>
+      </div>
       <div className='content'>
         <div className='meta'>
           <p>PIP-Player</p>

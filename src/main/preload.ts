@@ -32,6 +32,7 @@ const electronHandler = {
     },
   },
   getVersion: () => packageJson.version,
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

@@ -35,7 +35,9 @@ export default function SettingsGeneral() {
 
   return (
     <div className='settings-general'>
-      <h1>General</h1>
+      <div className='settings-header'>
+        <h1>General</h1>
+      </div>
       <div className='content'>
 
         {/* Position of Window */}

@@ -4,6 +4,7 @@ export const linkAtom = atom('')
 export const embedToggleAtom = atom(true)
 //Search
 export const isSearchingAtom = atom(false)
+export const searchHistoryAtom = atom<string[]>([])
 //Focus
 export const isFocusAtom = atom(true)
 //Refresh

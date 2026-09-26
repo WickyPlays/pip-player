@@ -1,0 +1,82 @@
+.settings-recent {
+  padding: 0 20px;
+
+  .settings-header {
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+
+    h1 {
+      font-size: 25px;
+      margin: 0;
+    }
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .setting-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+
+    label {
+      font-weight: 600;
+      font-size: 17px;
+    }
+  }
+
+  .no-history {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+
+    .history-item {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .history-url {
+        margin: 0;
+        font-size: 14px;
+        word-break: break-all;
+        color: rgba(255, 255, 255, 0.9);
+      }
+    }
+  }
+
+  .btn-clear {
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #cc0000;
+    }
+  }
+}

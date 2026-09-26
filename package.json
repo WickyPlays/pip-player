@@ -1,6 +1,6 @@
 {
   "name": "pip-player",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Picture-in-Picture Player",
   "keywords": [
     "electron",
@@ -29,7 +29,7 @@
     "build:main": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.main.prod.ts",
     "build:renderer": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
     "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && npm run build:dll",
-    "package": "ts-node ./.erb/scripts/sync-version.ts && ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never && npm run build:dll",
+    "package": "ts-node ./.erb/scripts/sync-version.ts && ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish always && npm run build:dll",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
     "prestart": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.main.dev.ts",
     "start": "ts-node ./.erb/scripts/check-port-in-use.js && npm run prestart && npm run start:renderer",
@@ -160,6 +160,11 @@
     "productName": "PIP-Player",
     "appId": "me.wickyplays.pipplayer",
     "asar": true,
+    "publish": {
+      "provider": "github",
+      "owner": "WickyPlays",
+      "repo": "pip-player"
+    },
     "protocols": [
       {
         "name": "PIP-Player Protocol",

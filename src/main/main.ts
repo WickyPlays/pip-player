@@ -1,5 +1,6 @@
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain, session, screen, protocol, dialog } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import { resolveHtmlPath } from './util';
 import { createWindow as createSettingsWindow } from '../settings-main/settings-main';
 import { windowStore } from '../window_store';
@@ -21,6 +22,10 @@ const schema = {
   minimizedOnStart: {
     type: 'boolean',
     default: false
+  },
+  searchHistory: {
+    type: 'array',
+    default: []
   }
 };
 
@@ -36,6 +41,51 @@ if (isDebug) {
   require('electron-debug')();
 }
 
+autoUpdater.setFeedURL({
+  provider: 'github',
+  owner: 'WickyPlays',
+  repo: 'pip-player'
+});
+
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
+
+autoUpdater.on('checking-for-update', () => {
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'checking' });
+  }
+});
+
+autoUpdater.on('update-available', (info) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'available', info });
+  }
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'not-available', info });
+  }
+});
+
+autoUpdater.on('error', (err) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'error', error: err.message });
+  }
+});
+
+autoUpdater.on('download-progress', (progress) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'downloading', progress });
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'downloaded', info });
+  }
+});
+
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
@@ -47,7 +97,7 @@ const installExtensions = async () => {
 };
 
 const setWindowPosition = () => {
-  const windowPosition = store.get('windowDefaultPosition');
+  const windowPosition = (store as any).get('windowDefaultPosition');
   if (mainWindow) {
     switch (windowPosition) {
       case 'top-left':
@@ -134,7 +184,7 @@ const createWindow = async () => {
   mainWindow.once('ready-to-show', () => {
     if (!mainWindow) throw new Error('"mainWindow" is not defined');
     setWindowPosition();
-    const minimizedOnStart = store.get('minimizedOnStart');
+    const minimizedOnStart = (store as any).get('minimizedOnStart');
     if (minimizedOnStart) {
       mainWindow.minimize();
     } else {
@@ -211,6 +261,10 @@ if (!gotTheLock) {
     if (mainWindow === null) {
       createWindow();
     }
+    // Check for updates for only in production
+    if (!isDebug) {
+      autoUpdater.checkForUpdates().catch(console.error);
+    }
   }).catch(console.log);
 }
 
@@ -230,12 +284,51 @@ ipcMain.on('window-minimize', () => {
 });
 ipcMain.on('window-close', () => windowStore.closeAll());
 ipcMain.on('config-set-windowDefaultPosition', (event, pos: any) => {
-  store.set('windowDefaultPosition', pos);
+  (store as any).set('windowDefaultPosition', pos);
   setWindowPosition();
 });
 
 ipcMain.handle('config-get-autoplayMedia', () => {
-  return store.autoplayMedia;
+  return (store as any).get('autoplayMedia');
+});
+
+//Updater IPC
+ipcMain.on('check-for-updates', () => {
+  autoUpdater.checkForUpdates().catch(console.error);
+});
+
+ipcMain.on('download-update', () => {
+  autoUpdater.downloadUpdate().catch(console.error);
+});
+
+ipcMain.on('install-update', () => {
+  autoUpdater.quitAndInstall();
+});
+
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});
+
+// Search History IPC
+ipcMain.handle('get-search-history', () => {
+  return (store as any).get('searchHistory') || [];
+});
+
+ipcMain.on('add-to-search-history', (event, url: string) => {
+  const history = (store as any).get('searchHistory') || [];
+  // Remove duplicate if exists
+  const filteredHistory = history.filter((item: string) => item !== url);
+  // Add new URL to the beginning
+  const newHistory = [url, ...filteredHistory];
+  // Keep only last 50 items
+  if (newHistory.length > 50) {
+    newHistory.length = 50;
+  }
+  (store as any).set('searchHistory', newHistory);
+});
+
+ipcMain.on('clear-search-history', () => {
+  (store as any).set('searchHistory', []);
 });
 
 app.commandLine.appendSwitch('url');

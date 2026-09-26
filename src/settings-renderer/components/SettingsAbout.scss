@@ -3,11 +3,17 @@
   font-family: Arial, sans-serif;
   color: #333;
 
-  h1 {
-    font-size: 25px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: #FFF;
+  .settings-header {
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+
+    h1 {
+      font-size: 25px;
+      font-weight: 600;
+      margin: 0;
+      color: #FFF;
+    }
   }
 
   .content {

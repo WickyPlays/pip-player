@@ -1,7 +1,14 @@
 .settings-misc {
   padding: 0px 20px;
 
-  h1 {
-    font-size: 25px;
+  .settings-header {
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+
+    h1 {
+      font-size: 25px;
+      margin: 0;
+    }
   }
 }
