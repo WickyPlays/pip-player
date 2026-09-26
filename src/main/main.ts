@@ -331,4 +331,10 @@ ipcMain.on('clear-search-history', () => {
   (store as any).set('searchHistory', []);
 });
 
+ipcMain.on('remove-from-search-history', (event, url: string) => {
+  const history = (store as any).get('searchHistory') || [];
+  const newHistory = history.filter((item: string) => item !== url);
+  (store as any).set('searchHistory', newHistory);
+});
+
 app.commandLine.appendSwitch('url');

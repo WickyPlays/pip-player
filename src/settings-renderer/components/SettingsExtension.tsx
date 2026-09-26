@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { IoLogoChrome, IoLogoEdge, IoLogoFirefox, IoWarning } from 'react-icons/io5';
 import './SettingsExtension.scss';
+import ipcService from '../../renderer/utils/ipcService';
 
 export default function SettingsExtension() {
-  const [hoveredBrowser, setHoveredBrowser] = useState(null);
+  const [hoveredBrowser, setHoveredBrowser] = useState<string | null>(null);
 
   const browserNames = {
     chrome: 'Chrome (unavailable)',
@@ -17,8 +18,8 @@ export default function SettingsExtension() {
     firefox: 'https://addons.mozilla.org/en-US/firefox/addon/your-extension-id'
   };
 
-  const openLink = (link) => {
-    window.electron.ipcRenderer.send('open-link', link);
+  const openLink = (link: string) => {
+    ipcService.openLink(link);
   };
 
   return (

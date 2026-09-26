@@ -9,6 +9,9 @@ import ScreenEmpty from './media/ScreenEmpty';
 import { getLinkType, LinkType } from '../../utils/EmbedUtil';
 import { useEffect, useState, useRef } from 'react';
 import ScreenTwitch from './media/ScreenTwitch';
+import ipcService from '../../utils/ipcService';
+
+type LinkTypeValue = typeof LinkType[keyof typeof LinkType];
 
 export default function Screen() {
   const [link] = useAtom(linkAtom);
@@ -17,18 +20,18 @@ export default function Screen() {
   const [webviewLoaded, setWebviewLoaded] = useAtom(webviewLoadedAtom);
   const [webviewRef, setWebviewRef] = useAtom(webviewRefAtom);
   const [autoplayMedia, setAutoplayMedia] = useState(true);
-  const [linkType, setLinkType] = useState<LinkType>(LinkType.OTHER);
+  const [linkType, setLinkType] = useState<LinkTypeValue>(LinkType.OTHER);
   const localWebviewRef = useRef<Electron.WebviewTag>(null);
 
   useEffect(() => {
-    const linkType = getLinkType(link)
-    setLinkType(linkType);
+    const detectedLinkType = getLinkType(link)
+    setLinkType(detectedLinkType);
     // Reset webview loaded state when link changes
     setWebviewLoaded(false);
   }, [link, setWebviewLoaded])
 
   useEffect(() => {
-    window.electron.ipcRenderer.invoke('config-get-autoplayMedia').then((value) => {
+    ipcService.getAutoplayMedia().then((value) => {
       setAutoplayMedia(value);
     });
   }, [])

@@ -1,24 +1,7 @@
 import { useState, useEffect } from 'react';
 import { IoDownloadOutline, IoCheckmarkOutline, IoCloseOutline, IoRefreshOutline } from 'react-icons/io5';
 import './UpdateNotification.scss';
-
-interface UpdateInfo {
-  version: string;
-  releaseNotes?: string;
-  releaseDate?: string;
-}
-
-interface UpdateStatus {
-  status: 'checking' | 'available' | 'not-available' | 'error' | 'downloading' | 'downloaded';
-  info?: UpdateInfo;
-  error?: string;
-  progress?: {
-    percent: number;
-    bytesPerSecond: number;
-    transferred: number;
-    total: number;
-  };
-}
+import ipcService, { UpdateStatus } from '../../utils/ipcService';
 
 export default function UpdateNotification() {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
@@ -35,19 +18,19 @@ export default function UpdateNotification() {
       }
     };
 
-    window.electron.ipcRenderer.on('update-status', handleUpdateStatus);
+    ipcService.on('update-status', handleUpdateStatus);
 
     return () => {
-      window.electron.ipcRenderer.removeListener('update-status', handleUpdateStatus);
+      ipcService.removeListener('update-status', handleUpdateStatus);
     };
   }, []);
 
   const handleDownload = () => {
-    window.electron.ipcRenderer.send('download-update');
+    ipcService.downloadUpdate();
   };
 
   const handleInstall = () => {
-    window.electron.ipcRenderer.send('install-update');
+    ipcService.installUpdate();
   };
 
   const handleDismiss = () => {
@@ -57,7 +40,7 @@ export default function UpdateNotification() {
   const handleCheckForUpdates = () => {
     setUpdateStatus({ status: 'checking' });
     setIsVisible(true);
-    window.electron.ipcRenderer.send('check-for-updates');
+    ipcService.checkForUpdates();
   };
 
   if (!isVisible || !updateStatus) {

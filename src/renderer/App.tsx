@@ -4,18 +4,27 @@ import Screen from "./components/screen/Screen";
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import ButtonSet from "./components/ButtonSet/ButtonSet";
 import UpdateNotification from "./components/UpdateNotification/UpdateNotification";
+import ipcService from "./utils/ipcService";
 
 function AppWindow(): JSX.Element {
 
   const [windowPositionStyle, setWindowPositionStyle] = useState<string>('row');
 
-  window.electron.ipcRenderer.on('window-position', (pos: any) => {
-    if (pos == 'left') {
-      setWindowPositionStyle('row-reverse');
-    } else if (pos == 'right') {
-      setWindowPositionStyle('row');
-    }
-  });
+  useEffect(() => {
+    const handleWindowPosition = (pos: any) => {
+      if (pos == 'left') {
+        setWindowPositionStyle('row-reverse');
+      } else if (pos == 'right') {
+        setWindowPositionStyle('row');
+      }
+    };
+
+    ipcService.onWindowPosition(handleWindowPosition);
+
+    return () => {
+      ipcService.removeWindowPositionListener(handleWindowPosition);
+    };
+  }, []);
 
   useEffect(() => {
     console.log("App loaded")

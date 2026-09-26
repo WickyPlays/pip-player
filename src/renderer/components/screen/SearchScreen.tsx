@@ -4,6 +4,7 @@ import Button from '../materials/MatButton';
 import { IoSearchOutline, IoChevronDownOutline } from 'react-icons/io5'
 import { isSearchingAtom, linkAtom } from '../atoms';
 import { useAtom } from 'jotai';
+import ipcService from '../../utils/ipcService';
 
 export default function SearchScreen() {
   const [link, setLink] = useAtom(linkAtom);
@@ -22,7 +23,7 @@ export default function SearchScreen() {
       setLink(inputLink);
       setIsSearching(false)
       setShowDropdown(false);
-      window.electron.ipcRenderer.send('add-to-search-history', inputLink.trim());
+      ipcService.addToSearchHistory(inputLink.trim());
     }
   };
 
@@ -39,7 +40,7 @@ export default function SearchScreen() {
   };
 
   const loadSearchHistory = () => {
-    window.electron.ipcRenderer.invoke('get-search-history').then((history: string[]) => {
+    ipcService.getSearchHistory().then((history: string[]) => {
       setSearchHistory(history || []);
     });
   };
@@ -60,10 +61,18 @@ export default function SearchScreen() {
     };
   }, [showDropdown]);
 
-  window.electron.ipcRenderer.on('window-load-url', (url: any) => {
-    setInputLink(url)
-    setLink(url)
-  })
+  useEffect(() => {
+    const handleWindowLoadUrl = (url: string) => {
+      setInputLink(url)
+      setLink(url)
+    }
+
+    ipcService.onWindowLoadUrl(handleWindowLoadUrl)
+
+    return () => {
+      ipcService.removeWindowLoadUrlListener(handleWindowLoadUrl)
+    }
+  }, [])
 
   return (
     <div className='search-screen' style={{ display: isSearching ? 'flex' : 'none' }}>

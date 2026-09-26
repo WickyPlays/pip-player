@@ -51,6 +51,10 @@
       border-radius: 5px;
       cursor: pointer;
       transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
 
       &:hover {
         background-color: rgba(255, 255, 255, 0.2);
@@ -61,6 +65,30 @@
         font-size: 14px;
         word-break: break-all;
         color: rgba(255, 255, 255, 0.9);
+        flex: 1;
+      }
+
+      .btn-remove-item {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 3px;
+        transition: all 0.2s;
+        flex-shrink: 0;
+
+        &:hover {
+          background-color: rgba(255, 0, 0, 0.2);
+          color: rgba(255, 255, 255, 0.9);
+        }
+
+        svg {
+          font-size: 16px;
+        }
       }
     }
   }

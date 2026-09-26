@@ -4,6 +4,7 @@ import { IoCloseOutline, IoEyeOutline, IoRemoveOutline, IoRefreshOutline, IoSear
 import { useAtom } from 'jotai';
 import { isFocusAtom, isSearchingAtom, refreshKeyAtom, linkAtom, webviewLoadedAtom, webviewRefAtom } from '../atoms';
 import { getLinkType, LinkType } from '../../utils/EmbedUtil';
+import ipcService from '../../utils/ipcService';
 
 export default function ButtonSet() {
 	let [isSearching, setIsSearching] = useAtom(isSearchingAtom)
@@ -22,8 +23,8 @@ export default function ButtonSet() {
 	}
 
 	function toggleSettings() {
-		window.electron.ipcRenderer.send('window-minimize');
-		window.electron.ipcRenderer.openSettingsWindow();
+		ipcService.minimizeWindow();
+		ipcService.openSettingsWindow();
 	}
 
 	function refreshContent() {
@@ -92,13 +93,13 @@ export default function ButtonSet() {
 				</Button>
 				<Button
 					className='btn-minimize'
-					onClick={() => window.electron.ipcRenderer.send('window-minimize')}
+					onClick={() => ipcService.minimizeWindow()}
 				>
 					<IoRemoveOutline />
 				</Button>
 				<Button
 					className='btn-close'
-					onClick={() => window.electron.ipcRenderer.send('window-close')}
+					onClick={() => ipcService.closeWindow()}
 				>
 					<IoCloseOutline />
 				</Button>

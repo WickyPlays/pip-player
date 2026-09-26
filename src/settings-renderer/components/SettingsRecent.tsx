@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
 import './SettingsRecent.scss';
+import ipcService from '../../renderer/utils/ipcService';
 
 export default function SettingsRecent() {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -9,14 +11,19 @@ export default function SettingsRecent() {
   }, []);
 
   const loadSearchHistory = () => {
-    window.electron.ipcRenderer.invoke('get-search-history').then((history: string[]) => {
+    ipcService.getSearchHistory().then((history: string[]) => {
       setSearchHistory(history || []);
     });
   };
 
   const handleClearHistory = () => {
-    window.electron.ipcRenderer.send('clear-search-history');
+    ipcService.clearSearchHistory();
     setSearchHistory([]);
+  };
+
+  const handleRemoveItem = (url: string) => {
+    ipcService.removeFromSearchHistory(url);
+    setSearchHistory(prev => prev.filter(item => item !== url));
   };
 
   return (
@@ -34,6 +41,13 @@ export default function SettingsRecent() {
               {searchHistory.map((url, index) => (
                 <div key={index} className='history-item'>
                   <p className='history-url'>{url}</p>
+                  <button 
+                    className='btn-remove-item' 
+                    onClick={() => handleRemoveItem(url)}
+                    title='Remove from history'
+                  >
+                    <IoCloseOutline />
+                  </button>
                 </div>
               ))}
             </div>

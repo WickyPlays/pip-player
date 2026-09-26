@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './SettingsGeneral.scss';
+import ipcService from '../../renderer/utils/ipcService';
 
 export default function SettingsGeneral() {
   const [position, setPosition] = useState<string>('mid');
@@ -16,22 +17,34 @@ export default function SettingsGeneral() {
     if (!pos) return;
     setPosition(pos);
     console.log(pos)
-    window.electron.ipcRenderer.send('config-set-windowDefaultPosition', pos);
+    ipcService.setWindowDefaultPosition(pos);
   }
 
   const handleAutoplay = (value: boolean) => {
     setAutoplay(value);
-    window.electron.ipcRenderer.send('config-set-autoplayMedia', value);
+    ipcService.setAutoplayMedia(value);
   };
 
   const handleWindowMinimized = (value: boolean) => {
     setMinimized(value);
-    window.electron.ipcRenderer.send('config-set-minimizedOnStart', value);
+    ipcService.setMinimizedOnStart(value);
   };
 
-  window.electron.ipcRenderer.on('config-get-windowDefaultPosition', (pos: string) => setPosition(pos));
-  window.electron.ipcRenderer.on('config-get-autoplayMedia', (value: boolean) => setAutoplay(value));
-  window.electron.ipcRenderer.on('config-get-minimizedOnStart', (value: boolean) => setMinimized(value));
+  useEffect(() => {
+    const handlePosition = (pos: string) => setPosition(pos);
+    const handleAutoplay = (value: boolean) => setAutoplay(value);
+    const handleMinimized = (value: boolean) => setMinimized(value);
+
+    ipcService.onWindowDefaultPosition(handlePosition);
+    ipcService.onAutoplayMedia(handleAutoplay);
+    ipcService.onMinimizedOnStart(handleMinimized);
+
+    return () => {
+      ipcService.removeWindowDefaultPositionListener(handlePosition);
+      ipcService.removeAutoplayMediaListener(handleAutoplay);
+      ipcService.removeMinimizedOnStartListener(handleMinimized);
+    };
+  }, []);
 
   return (
     <div className='settings-general'>
@@ -40,7 +53,7 @@ export default function SettingsGeneral() {
       </div>
       <div className='content'>
 
-        {/* Position of Window */}
+        {/* Position of window */}
         <div className='setting-item settings-position'>
           <label>Window Default Position</label>
           <div className='grid'>
@@ -54,7 +67,7 @@ export default function SettingsGeneral() {
           </div>
         </div>
 
-        {/* Autoplay Media */}
+        {/* Autoplay media */}
         <div className='setting-item'>
           <label>Autoplay Media</label>
           <label className="switch">
@@ -63,7 +76,7 @@ export default function SettingsGeneral() {
           </label>
         </div>
 
-        {/* Minimized on Start */}
+        {/* Minimized on start */}
         <div className='setting-item'>
           <label>Minimized on Start</label>
           <label className="switch">

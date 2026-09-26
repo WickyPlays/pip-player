@@ -1,24 +1,7 @@
 import { useState, useEffect } from 'react';
 import { IoRefreshOutline, IoDownloadOutline, IoCheckmarkOutline, IoInformationCircleOutline } from 'react-icons/io5';
 import './SettingsUpdates.scss';
-
-interface UpdateInfo {
-  version: string;
-  releaseNotes?: string;
-  releaseDate?: string;
-}
-
-interface UpdateStatus {
-  status: 'checking' | 'available' | 'not-available' | 'error' | 'downloading' | 'downloaded';
-  info?: UpdateInfo;
-  error?: string;
-  progress?: {
-    percent: number;
-    bytesPerSecond: number;
-    transferred: number;
-    total: number;
-  };
-}
+import ipcService, { UpdateStatus } from '../../renderer/utils/ipcService';
 
 export default function SettingsUpdates() {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
@@ -28,7 +11,7 @@ export default function SettingsUpdates() {
     // Get current app version
     const fetchVersion = async () => {
       try {
-        const version = await window.electron.getAppVersion();
+        const version = await ipcService.getAppVersion();
         setCurrentVersion(version);
       } catch (error) {
         console.error('Failed to get app version:', error);
@@ -43,24 +26,24 @@ export default function SettingsUpdates() {
       setUpdateStatus(status);
     };
 
-    window.electron.ipcRenderer.on('update-status', handleUpdateStatus);
+    ipcService.on('update-status', handleUpdateStatus);
 
     return () => {
-      window.electron.ipcRenderer.removeListener('update-status', handleUpdateStatus);
+      ipcService.removeListener('update-status', handleUpdateStatus);
     };
   }, []);
 
   const handleCheckForUpdates = () => {
     setUpdateStatus({ status: 'checking' });
-    window.electron.ipcRenderer.send('check-for-updates');
+    ipcService.checkForUpdates();
   };
 
   const handleDownload = () => {
-    window.electron.ipcRenderer.send('download-update');
+    ipcService.downloadUpdate();
   };
 
   const handleInstall = () => {
-    window.electron.ipcRenderer.send('install-update');
+    ipcService.installUpdate();
   };
 
   const renderStatus = () => {

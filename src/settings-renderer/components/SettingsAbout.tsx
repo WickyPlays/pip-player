@@ -1,24 +1,25 @@
 import { IoLogoGithub } from 'react-icons/io5'
 import { useState, useEffect } from 'react'
 import './SettingsAbout.scss'
+import ipcService from '../../renderer/utils/ipcService'
 
 export default function SettingsAbout() {
   const [version, setVersion] = useState('Loading...')
 
   useEffect(() => {
-    setVersion(window.electron.getVersion())
+    setVersion(ipcService.getVersion())
   }, [])
 
   function handleBtnSource() {
-    window.electron.ipcRenderer.send("open-link", "https://github.com/WickyPlays/pip-player");
+    ipcService.openLink("https://github.com/WickyPlays/pip-player");
   }
 
   function handleBtnEmail() {
-    window.electron.ipcRenderer.send("open-email", "baottworkspace@gmail.com");
+    ipcService.openEmail("baottworkspace@gmail.com");
   }
 
   function handleLicense() {
-    window.electron.ipcRenderer.send("open-link", "https://github.com/WickyPlays/pip-player/blob/main/LICENSE")
+    ipcService.openLink("https://github.com/WickyPlays/pip-player/blob/main/LICENSE")
   }
 
   return (
